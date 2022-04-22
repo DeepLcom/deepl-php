@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset name="DeepLcom/deepl-php">
+    <description>The coding standard of deepl-php package</description>
+
+    <file>src</file>
+    <file>tests</file>
+
+    <arg value="p" />
+    <arg name="colors" />
+    <arg value="s" />
+
+    <rule ref="PSR2" />
+</ruleset>

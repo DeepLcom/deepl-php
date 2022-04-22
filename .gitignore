@@ -1,0 +1,18 @@
+# IDE files
+.idea/
+
+# Composer files
+composer.lock
+composer.phar
+/vendor/
+
+# Unit test output directory
+reports/
+
+# Ignore PHP CS Fixer local config and cache
+.php_cs
+.php_cs.cache
+.php-cs-fixer.cache
+
+# Ignore cached PHPUnit results.
+.phpunit.result.cache

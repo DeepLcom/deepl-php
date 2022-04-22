@@ -1,0 +1,85 @@
+image: php:latest
+
+cache:
+  key:
+    files:
+      - composer.json
+      - composer.lock
+  paths:
+    - vendor/
+
+stages:
+  - check
+  - test
+
+before_script:
+  # Install git, which is required by Composer
+  - apt-get update -yqq
+  - apt-get install git -yqq
+  # Install Composer
+  - EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')"
+  - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+  - ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+  - >
+    if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]; then
+      echo 'ERROR: Invalid installer checksum'
+      rm composer-setup.php
+      exit 1
+    fi
+  - php composer-setup.php
+  - rm composer-setup.php
+  # Install project dependencies using Composer
+  - php composer.phar install
+
+# stage: check ----------------------
+
+code sniffer:
+  stage: check
+  script:
+    - vendor/bin/phpcs
+
+# stage: test ----------------------
+
+test:
+  stage: test
+  services:
+    - name: $DOCKER_REGISTRY/deepl/deepl-mock
+      alias: deepl-mock
+  parallel:
+    matrix:
+      - DOCKER_IMAGE: "php:8.1"
+      - DOCKER_IMAGE: "php:8.1"
+        USE_MOCK_SERVER: "use mock server"
+      - DOCKER_IMAGE: "php:8.0"
+        USE_MOCK_SERVER: "use mock server"
+      - DOCKER_IMAGE: "php:7.4"
+        USE_MOCK_SERVER: "use mock server"
+      - DOCKER_IMAGE: "php:7.3"
+        USE_MOCK_SERVER: "use mock server"
+  image: ${DOCKER_IMAGE}
+  script:
+    - >
+      if [[ ! -z "${USE_MOCK_SERVER}" ]]; then
+        echo "Using mock server"
+        export DEEPL_SERVER_URL=http://deepl-mock:3000
+        export DEEPL_MOCK_SERVER_PORT=3000
+        export DEEPL_PROXY_URL=http://deepl-mock:3001
+        export DEEPL_MOCK_PROXY_SERVER_PORT=3001
+      fi
+    - vendor/bin/phpunit
+  artifacts:
+    reports:
+      cobertura:
+        - reports/cobertura.xml
+      junit:
+        - reports/junit.xml
+    when: always
+  secrets:
+    DEEPL_AUTH_KEY:
+      vault: jenkins/client_libraries/test_auth_key@backend
+      file: false
+    DEEPL_SERVER_URL:
+      vault: jenkins/client_libraries/test_server_url@backend
+      file: false
+
+
