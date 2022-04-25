@@ -184,6 +184,7 @@ class HttpClient
             switch ($errorCode) {
                 case \CURLE_OPERATION_TIMEOUTED:
                 case \CURLE_COULDNT_CONNECT:
+                case \CURLE_GOT_NOTHING:
                     $shouldRetry = true;
                     break;
                 default:
