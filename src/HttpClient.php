@@ -145,7 +145,7 @@ class HttpClient
 
         $curlOptions[\CURLOPT_URL] = $url;
         $curlOptions[\CURLOPT_CONNECTTIMEOUT] = $timeout;
-        $curlOptions[\CURLOPT_TIMEOUT] = $timeout;
+        $curlOptions[\CURLOPT_TIMEOUT_MS] = $timeout * 1000;
 
         // Convert headers from an associative array to an array of "key: value" elements
         $curlOptions[\CURLOPT_HTTPHEADER] = \array_map(function (string $key, string $value): string {
