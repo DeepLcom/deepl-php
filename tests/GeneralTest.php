@@ -22,6 +22,14 @@ class GeneralTest extends DeepLTestBase
         $translator->getUsage();
     }
 
+    public function testInvalidServerUrl()
+    {
+        new Translator($this->authKey, [TranslatorOptions::SERVER_URL => null]);
+
+        $this->expectException(DeepLException::class);
+        new Translator($this->authKey, [TranslatorOptions::SERVER_URL => false]);
+    }
+
     public function testUsage()
     {
         $translator = $this->makeTranslator();

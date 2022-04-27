@@ -39,8 +39,10 @@ final class Translator
         $serverUrl = $options[TranslatorOptions::SERVER_URL] ??
             (self::isAuthKeyFreeAccount($authKey) ? TranslatorOptions::DEFAULT_SERVER_URL_FREE
                 : TranslatorOptions::DEFAULT_SERVER_URL);
-        // Remove trailing slash if present
-        if (strlen($serverUrl) > 0 && substr($serverUrl, -1) === "/") {
+        if (!is_string($serverUrl) || strlen($serverUrl) == 0) {
+            throw new DeepLException('If specified, ' .
+                TranslatorOptions::SERVER_URL . ' option must be a non-empty string.');
+        } elseif (substr($serverUrl, -1) === "/") { // Remove trailing slash if present
             $serverUrl = substr($serverUrl, 0, strlen($serverUrl) - 1);
         }
 

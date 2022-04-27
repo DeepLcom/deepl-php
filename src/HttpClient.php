@@ -182,6 +182,12 @@ class HttpClient
             $errorMessage = \curl_error($this->curlHandle);
             $errorCode = \curl_errno($this->curlHandle);
             switch ($errorCode) {
+                case \CURLE_UNSUPPORTED_PROTOCOL:
+                case \CURLE_URL_MALFORMAT:
+                case \CURLE_URL_MALFORMAT_USER:
+                    $shouldRetry = false;
+                    $errorMessage = "Invalid server URL. $errorMessage";
+                    break;
                 case \CURLE_OPERATION_TIMEOUTED:
                 case \CURLE_COULDNT_CONNECT:
                 case \CURLE_GOT_NOTHING:
