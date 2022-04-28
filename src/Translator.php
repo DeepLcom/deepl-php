@@ -15,7 +15,7 @@ final class Translator
     /**
      * Library version.
      */
-    public const VERSION = '0.1.0';
+    public const VERSION = '0.1.1';
 
     /**
      * Implements all HTTP requests and retries.
@@ -49,7 +49,7 @@ final class Translator
         $headers = array_replace(
             [
                 'Authorization' => "DeepL-Auth-Key $authKey",
-                'User-Agent' => 'deepl-php/0.1.0',
+                'User-Agent' => 'deepl-php/0.1.1',
             ],
             $options[TranslatorOptions::HEADERS] ?? []
         );

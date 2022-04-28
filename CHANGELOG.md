@@ -5,8 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.1.1] - 2022-04-28
+### Fixed
+* Added minimum supported PHP version to composer.json.
+* Fix cURL client issue: do not round timeouts to whole seconds.
+* Fix cURL client issue: consider empty response a retryable-error.
+* Check for and reject invalid `server_url` option.
+
+
 ## [0.1.0] - 2022-04-22
 Initial version.
 
 
+[0.1.1]: https://github.com/DeepLcom/deepl-php/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/DeepLcom/deepl-php/releases/tag/v0.1.0
