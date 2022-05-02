@@ -12,7 +12,7 @@ namespace DeepL;
  * @see Translator::getSourceLanguages()
  * @see Translator::getTargetLanguages()
  */
-final class LanguageCode
+class LanguageCode
 {
     /** Bulgarian language code, may be used as source or target language. */
     public const BULGARIAN = 'bg';

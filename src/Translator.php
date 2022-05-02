@@ -10,7 +10,7 @@ namespace DeepL;
  * Wrapper for the DeepL API for language translation.
  * Create an instance of Translator to use the DeepL API.
  */
-final class Translator
+class Translator
 {
     /**
      * Library version.

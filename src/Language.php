@@ -9,7 +9,7 @@ namespace DeepL;
 /**
  * Information about a language supported by DeepL translator.
  */
-final class Language
+class Language
 {
     /**
      * @var string Name of the language in English.

@@ -9,7 +9,7 @@ namespace DeepL;
 /**
  * Holds the result of a text translation request.
  */
-final class TextResult
+class TextResult
 {
     /**
      * @var string String containing the translated text.

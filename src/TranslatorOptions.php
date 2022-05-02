@@ -10,7 +10,7 @@ namespace DeepL;
  * Options that can be specified when constructing a Translator.
  * @see Translator::__construct
  */
-final class TranslatorOptions
+class TranslatorOptions
 {
     /**
      * Base URL of DeepL API, can be overridden for example for testing purposes. By default, the correct DeepL API URL

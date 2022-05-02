@@ -10,7 +10,7 @@ namespace DeepL;
  * Options that can be specified when translating text.
  * @see Translator::translateText()
  */
-final class TranslateTextOptions
+class TranslateTextOptions
 {
     /**
      * Specifies how input translation text should be split into sentences.

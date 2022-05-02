@@ -9,7 +9,7 @@ namespace DeepL;
 /**
  * Stores the count and limit for one usage type.
  */
-final class UsageDetail
+class UsageDetail
 {
     /**
      * @var int The amount used of this usage type.

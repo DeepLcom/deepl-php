@@ -14,7 +14,7 @@ namespace DeepL;
  * teamDocument fields provide details about each corresponding usage type, allowing each usage type
  * to be checked individually. The anyLimitReached() function checks if any usage type is exceeded.
  */
-final class Usage
+class Usage
 {
     /**
      * @var UsageDetail|null Usage details for characters, for example due to the translateText() function.
