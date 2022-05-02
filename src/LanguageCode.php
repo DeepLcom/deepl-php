@@ -53,6 +53,9 @@ class LanguageCode
     /** Hungarian language code, may be used as source or target language. */
     public const HUNGARIAN = 'hu';
 
+    /** Indonesian language code, may be used as source or target language. */
+    public const INDONESIAN = 'id';
+
     /** Italian language code, may be used as source or target language. */
     public const ITALIAN = 'it';
 
@@ -94,6 +97,9 @@ class LanguageCode
 
     /** Swedish language code, may be used as source or target language. */
     public const SWEDISH = 'sv';
+
+    /** Turkish language code, may be used as source or target language. */
+    public const TURKISH = 'tr';
 
     /** Chinese language code, may be used as source or target language. */
     public const CHINESE = 'zh';

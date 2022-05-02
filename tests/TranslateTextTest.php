@@ -12,7 +12,8 @@ class TranslateTextTest extends DeepLTestBase
     {
         $translator = $this->makeTranslator();
         foreach (DeepLTestBase::EXAMPLE_TEXT as $langCode => $exampleText) {
-            $result = $translator->translateText($exampleText, null, 'en-US');
+            $sourceLang = \DeepL\LanguageCode::removeRegionalVariant($langCode);
+            $result = $translator->translateText($exampleText, $sourceLang, 'en-US');
             $this->assertStringContainsStringIgnoringCase('proton', $result->text, "LangCode: $langCode");
         }
     }
