@@ -119,4 +119,20 @@ class LanguageCode
             return strtolower($exploded[0]);
         }
     }
+
+    /**
+     * Removes the regional variant (if any) from a language code, for example inputs 'en' and 'en-US' both return 'en'.
+     * @param string $langCode String containing language code to convert.
+     * @return string String containing language code without a regional variant.
+     * @throws DeepLException
+     */
+    public static function removeRegionalVariant(string $langCode): string
+    {
+        if (strlen($langCode) === 0) {
+            throw new DeepLException('langCode must be a non-empty string');
+        }
+
+        $exploded = explode('-', $langCode, 2);
+        return strtolower($exploded[0]);
+    }
 }
