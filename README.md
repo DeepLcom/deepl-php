@@ -20,8 +20,8 @@ management soon.
 ## Getting an authentication key
 
 To use deepl-php, you'll need an API authentication key. To get a key,
-[please create an account here][create-account].
-You can translate up to 500,000 characters/month for free.
+[please create an account here][create-account]. With a DeepL API Free account
+you can translate up to 500,000 characters/month for free.
 
 ## Installation
 
