@@ -14,8 +14,7 @@ DeepL's best-in-class translation technology.
 
 The DeepL PHP library offers a convenient way for applications written for
 PHP to interact with the DeepL API. Currently, the library only supports text
-translation; we intend to add support for document translation and glossary
-management soon.
+and document translation; we intend to add support for glossary management soon.
 
 ## Getting an authentication key
 
@@ -134,6 +133,63 @@ The following options are only used if `tag_handling` is `'xml'`:
 
 The `TranslateTextOptions` class defines constants for the options above, for
 example `TranslateTextOptions::FORMALITY` is defined as `'formality'`.
+
+### Translating documents
+
+To translate documents, call `translateDocument()`. The first and second
+arguments are the input and output file paths.
+
+The third and fourth arguments are the source and target language codes, and
+they work exactly the same as when translating text with `translateText()`.
+
+The last argument to `translateDocument()` is optional, and specifies extra
+translation options, see
+[Document translation options](#document-translation-options) below.
+
+```php
+// Translate a formal document from English to German:
+try {
+    $translator->translateDocument(
+        'Instruction Manual.docx',
+        'Bedienungsanleitung.docx',
+        'en',
+        'de',
+        ['formality' => 'more'],
+    );
+} catch (\DeepL\DocumentTranslationException $error) {
+    // If the error occurs after the document was already uploaded,
+    // documentHandle will contain the document ID and key
+    echo 'Error occurred while translating document: ' . ($error->getMessage() ?? 'unknown error');
+    if ($error->documentHandle) {
+        $handle = $error->documentHandle;
+        echo "Document ID: {$handle->documentId}, document key: {$handle->documentKey}";
+    } else {
+        echo 'Unknown document handle';
+    }
+}
+```
+
+`translateDocument()` wraps multiple API calls: uploading, polling status until
+the translation is complete, and downloading. If your application needs to
+execute these steps individually, you can instead use the following functions
+directly:
+
+-   `uploadDocument()`,
+-   `getDocumentStatus()` (or `waitUntilDocumentTranslationComplete()`), and
+-   `downloadDocument()`
+
+#### Document translation options
+
+Provide options to the `translateDocument` function as an associative array,
+using the following keys:
+
+-   `formality`: same as in [Text translation options](#text-translation-options).
+-   `glossary`: same as in [Text translation options](#text-translation-options).
+
+The `uploadDocument` function also supports these options.
+
+The `TranslateDocumentOptions` class defines constants for the options above,
+for example `TranslateDocumentOptions::FORMALITY` is defined as `'formality'`.
 
 ### Checking account usage
 

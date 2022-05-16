@@ -212,14 +212,14 @@ class HttpClient
         return $statusCode === 429 || ($statusCode >= 500 && $statusCode !== 503);
     }
 
-    private function logDebug(string $message): void
+    public function logDebug(string $message): void
     {
         if ($this->logger) {
             $this->logger->debug($message);
         }
     }
 
-    private function logInfo(string $message): void
+    public function logInfo(string $message): void
     {
         if ($this->logger) {
             $this->logger->info($message);

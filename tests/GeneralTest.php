@@ -102,15 +102,53 @@ class GeneralTest extends DeepLTestBase
         $this->assertStringContainsString('Characters: 0 of 20', strval($usage));
         $this->assertStringContainsString('Documents: 0 of 1', strval($usage));
 
-        $translator->translateText(str_repeat('a', $characterLimit), null, 'de');
+        list(, $exampleDocument, , $outputDocumentPath) = $this->tempFiles();
+        $this->writeFile($exampleDocument, str_repeat('a', $characterLimit));
+
+        $translator->translateDocument($exampleDocument, $outputDocumentPath, null, 'de');
 
         $usage = $translator->getUsage();
         $this->assertTrue($usage->anyLimitReached());
         $this->assertTrue($usage->character->limitReached());
-        $this->assertFalse($usage->document->limitReached());
+        $this->assertTrue($usage->document->limitReached());
         $this->assertNull($usage->teamDocument);
 
-        $this->expectException(QuotaExceededException::class);
-        $translator->translateText(str_repeat('a', $characterLimit), null, 'de');
+        unlink($outputDocumentPath);
+        $this->expectException(DocumentTranslationException::class);
+        $this->expectExceptionMessage('Quota for this billing period has been exceeded');
+        $translator->translateDocument($exampleDocument, $outputDocumentPath, null, "de");
+    }
+
+    public function testUsageTeamDocumentLimit()
+    {
+        $this->needsMockServer();
+        $teamDocumentLimit = 1;
+        $this->sessionInitCharacterLimit = 0;
+        $this->sessionInitDocumentLimit = 0;
+        $this->sessionInitTeamDocumentLimit = $teamDocumentLimit;
+
+        $translator = $this->makeTranslatorWithRandomAuthKey();
+        $usage = $translator->getUsage();
+        $this->assertFalse($usage->anyLimitReached());
+        $this->assertNull($usage->character);
+        $this->assertNull($usage->document);
+        $this->assertFalse($usage->teamDocument->limitReached());
+        $this->assertStringNotContainsString("Characters:", strval($usage));
+        $this->assertStringNotContainsString("Documents:", strval($usage));
+        $this->assertStringContainsString("Team documents:", strval($usage));
+
+        list(, $exampleDocument, , $outputDocumentPath) = $this->tempFiles();
+        $this->writeFile($exampleDocument, 'a');
+
+        $translator->translateDocument($exampleDocument, $outputDocumentPath, null, "de");
+
+        $usage = $translator->getUsage();
+        $this->assertTrue($usage->anyLimitReached());
+        $this->assertTrue($usage->teamDocument->limitReached());
+
+        unlink($outputDocumentPath);
+        $this->expectException(DocumentTranslationException::class);
+        $this->expectExceptionMessage('Quota for this billing period has been exceeded');
+        $translator->translateDocument($exampleDocument, $outputDocumentPath, null, "de");
     }
 }

@@ -136,6 +136,159 @@ class Translator
     }
 
     /**
+     * Uploads specified document to DeepL to translate into given target language, waits for translation to complete,
+     * then downloads translated document to specified output path.
+     * @param string $inputFile String containing file path of document to be translated.
+     * @param string $outputFile String containing file path to create translated document.
+     * @param string|null $sourceLang Language code of input document, or null to use auto-detection.
+     * @param string $targetLang Language code of language to translate into.
+     * @param array $options Translation options to apply. See \DeepL\TranslateDocumentOptions.
+     * @return DocumentStatus DocumentStatus object for the completed translation. You can use the billedCharacters
+     *     property to check how many characters were billed for the document.
+     * @throws DocumentTranslationException If a file already exists at the output file path, or if any error occurs
+     * during document upload, translation or download. The `documentHandle` property of the exception, if not null,
+     * may be used to recover the document ID and key of an in-progress translation.
+     * @see \DeepL\TranslateDocumentOptions
+     */
+    public function translateDocument(
+        string $inputFile,
+        string $outputFile,
+        ?string $sourceLang,
+        string $targetLang,
+        array $options = []
+    ): DocumentStatus {
+        $handle = null;
+        if (file_exists($outputFile)) {
+            throw new DocumentTranslationException("File already exists at output file path $outputFile");
+        }
+        try {
+            $handle = $this->uploadDocument($inputFile, $sourceLang, $targetLang, $options);
+            $status = $this->waitUntilDocumentTranslationComplete($handle);
+            $this->downloadDocument($handle, $outputFile);
+            return $status;
+        } catch (DeepLException $error) {
+            if (file_exists($outputFile)) {
+                unlink($outputFile);
+            }
+            $message = 'Error occurred while translating document: ' . ($error->getMessage() ?? 'unknown error');
+            throw new DocumentTranslationException($message, $error->getCode(), $error, $handle);
+        }
+    }
+
+    /**
+     * Uploads specified document to DeepL to translate into target language, and returns handle associated with the
+     * document.
+     * @param string $inputFile String containing file path of document to be translated.
+     * @param string|null $sourceLang Language code of input document, or null to use auto-detection.
+     * @param string $targetLang Language code of language to translate into.
+     * @param array $options Translation options to apply. See \DeepL\TranslateDocumentOptions.
+     * @return DocumentHandle Handle associated with the in-progress document translation.
+     * @throws DeepLException
+     */
+    public function uploadDocument(
+        string $inputFile,
+        ?string $sourceLang,
+        string $targetLang,
+        array $options = []
+    ): DocumentHandle {
+        $params = $this->buildBodyParams(
+            $sourceLang,
+            $targetLang,
+            $options[TranslateDocumentOptions::FORMALITY] ?? null,
+            $options[TranslateDocumentOptions::GLOSSARY] ?? null
+        );
+
+        $response = $this->client->sendRequestWithBackoff(
+            'POST',
+            '/v2/document',
+            [
+                HttpClient::OPTION_PARAMS => $params,
+                HttpClient::OPTION_FILE => $inputFile,
+            ]
+        );
+        $this->checkStatusCode($response);
+
+        list(, $content) = $response;
+
+        $json = json_decode($content, true);
+        $documentId = $json['document_id'];
+        $documentKey = $json['document_key'];
+        return new DocumentHandle($documentId, $documentKey);
+    }
+
+    /**
+     * Retrieves the status of the document translation associated with the given document handle.
+     * @param DocumentHandle $handle Document handle associated with document.
+     * @return DocumentStatus The document translation status.
+     * @throws DeepLException
+     */
+    public function getDocumentStatus(DocumentHandle $handle): DocumentStatus
+    {
+        $response = $this->client->sendRequestWithBackoff(
+            'GET',
+            "/v2/document/$handle->documentId",
+            [HttpClient::OPTION_PARAMS => ['document_key' => $handle->documentKey]]
+        );
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+        return new DocumentStatus($content);
+    }
+
+    /**
+     * Downloads the translated document associated with the given document handle to the specified output file path.
+     * @param DocumentHandle $handle Document handle associated with document.
+     * @param string $outputFile String containing file path to create translated document.
+     * @throws DeepLException
+     */
+    public function downloadDocument(DocumentHandle $handle, string $outputFile): void
+    {
+        if (file_exists($outputFile)) {
+            throw new DeepLException("File already exists at output file path $outputFile");
+        }
+        try {
+            $response = $this->client->sendRequestWithBackoff(
+                'GET',
+                "/v2/document/$handle->documentId/result",
+                [
+                    HttpClient::OPTION_PARAMS => ['document_key' => $handle->documentKey],
+                    HttpClient::OPTION_OUTFILE => $outputFile,
+                ]
+            );
+            $this->checkStatusCode($response, true);
+        } catch (DeepLException $error) {
+            if (file_exists($outputFile)) {
+                unlink($outputFile);
+            }
+            throw $error;
+        }
+    }
+
+    /**
+     * Returns when the given document translation completes, or throws an exception if there was an error
+     * communicating with the DeepL API or the document translation failed.
+     * @param DocumentHandle $handle Handle to the document translation.
+     * @return DocumentStatus DocumentStatus object for the completed translation. You can use the billedCharacters
+     *     property to check how many characters were billed for the document.
+     * @throws DeepLException
+     */
+    public function waitUntilDocumentTranslationComplete(DocumentHandle $handle): DocumentStatus
+    {
+        $status = $this->getDocumentStatus($handle);
+        while (!$status->done() && $status->ok()) {
+            // Wait for half of remaining time, limited between 1 and 60 seconds
+            $secs = ($status->secondsRemaining || 0) / 2.0 + 1.0;
+            $secs = max(1.0, min($secs, 60.0));
+            usleep($secs * 1000000);
+            $this->client->logInfo("Rechecking document translation status after sleeping for $secs seconds.");
+            $status = $this->getDocumentStatus($handle);
+        }
+        if (!$status->ok()) {
+            throw new DeepLException($status->errorMessage ?? 'unknown error');
+        }
+        return $status;
+    }
+
+    /**
      * Queries source or target languages supported by DeepL API.
      * @param bool $target Query target languages if true, source languages otherwise.
      * @return Language[] Array of Language objects containing available languages.
@@ -251,6 +404,7 @@ class Translator
      * @param array|null $options Options for translate text request.
      * Note the formality and glossary options are handled separately, because these options overlap with document
      * translation.
+     * @throws DeepLException
      */
     private function validateAndAppendTextOptions(array &$params, ?array $options): void
     {
@@ -300,7 +454,7 @@ class Translator
      * Checks the HTTP status code, and in case of failure, throws an exception with diagnostic information.
      * @throws DeepLException
      */
-    private function checkStatusCode(array $response)
+    private function checkStatusCode(array $response, bool $inDocumentDownload = false, bool $usingGlossary = false)
     {
         list($statusCode, $content) = $response;
 
@@ -328,6 +482,9 @@ class Translator
             case 456:
                 throw new QuotaExceededException("Quota for this billing period has been exceeded$message");
             case 404:
+                if ($usingGlossary) {
+                    throw new DeepLException("Glossary not found$message");
+                }
                 throw new NotFoundException("Not found, check server_url$message");
             case 400:
                 throw new DeepLException("Bad request$message");
@@ -336,7 +493,12 @@ class Translator
                     "Too many requests, DeepL servers are currently experiencing high load$message"
                 );
             case 503:
-                throw new DeepLException("Service unavailable$message");
+                if ($inDocumentDownload) {
+                    throw new DocumentNotReadyException("Document not ready$message");
+                } else {
+                    throw new DeepLException("Service unavailable$message");
+                }
+                break; // break required by phpcs although it is unnecessary
             default:
                 throw new DeepLException(
                     "Unexpected status code: $statusCode $message, content: $content."

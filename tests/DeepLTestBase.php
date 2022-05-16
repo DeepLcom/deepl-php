@@ -58,8 +58,16 @@ class DeepLTestBase extends TestCase
         'zh' => '质子束',
     ];
 
+    protected const EXAMPLE_DOCUMENT_INPUT = DeepLTestBase::EXAMPLE_TEXT['en'];
+    protected const EXAMPLE_DOCUMENT_OUTPUT = DeepLTestBase::EXAMPLE_TEXT['de'];
+    protected $EXAMPLE_LARGE_DOCUMENT_INPUT;
+    protected $EXAMPLE_LARGE_DOCUMENT_OUTPUT;
+
     public function __construct(?string $name = null, array $data = array(), $dataName = '')
     {
+        $this->EXAMPLE_LARGE_DOCUMENT_INPUT = str_repeat(DeepLTestBase::EXAMPLE_TEXT['en'] . PHP_EOL, 1000);
+        $this->EXAMPLE_LARGE_DOCUMENT_OUTPUT = str_repeat(DeepLTestBase::EXAMPLE_TEXT['de'] . PHP_EOL, 1000);
+
         $this->serverUrl = getenv('DEEPL_SERVER_URL');
         $this->isMockServer = getenv('DEEPL_MOCK_SERVER_PORT') !== false;
 
@@ -119,10 +127,10 @@ class DeepLTestBase extends TestCase
             $result['mock-server-session-doc-failure'] = strval($this->sessionDocFailure);
         }
         if ($this->sessionDocQueueTime !== null) {
-            $result['mock-server-session-doc-queue-time'] = strval($this->sessionDocQueueTime);
+            $result['mock-server-session-doc-queue-time'] = strval($this->sessionDocQueueTime * 1000);
         }
         if ($this->sessionDocTranslateTime !== null) {
-            $result['mock-server-session-doc-translate-time'] = strval($this->sessionDocTranslateTime);
+            $result['mock-server-session-doc-translate-time'] = strval($this->sessionDocTranslateTime * 1000);
         }
         if ($this->sessionExpectProxy !== null) {
             $result['mock-server-session-expect-proxy'] = $this->sessionExpectProxy ? '1' : '0';
@@ -156,5 +164,39 @@ class DeepLTestBase extends TestCase
         $authKey = Uuid::uuid4();
 
         return new Translator($authKey, $mergedOptions);
+    }
+
+    public static function readFile(string $filepath): string
+    {
+        $size = filesize($filepath);
+        if ($size == 0) {
+            return "";
+        } else {
+            $fh = fopen($filepath, 'r');
+            $content = fread($fh, filesize($filepath));
+            fclose($fh);
+            return $content;
+        }
+    }
+
+    public static function writeFile(string $filepath, string $content)
+    {
+        $fh = fopen($filepath, 'w');
+        fwrite($fh, $content);
+        fclose($fh);
+    }
+
+    public function tempFiles(): array
+    {
+        $tempDir = sys_get_temp_dir() . '/deepl-php-test-' . Uuid::uuid4() . '/';
+        $exampleDocument = $tempDir . 'example_document.txt';
+        $exampleLargeDocument = $tempDir . 'example_large_document.txt';
+        $outputDocumentPath = $tempDir . 'output_document.txt';
+
+        mkdir($tempDir);
+        $this->writeFile($exampleDocument, DeepLTestBase::EXAMPLE_DOCUMENT_INPUT);
+        $this->writeFile($exampleLargeDocument, $this->EXAMPLE_LARGE_DOCUMENT_INPUT);
+
+        return [$tempDir, $exampleDocument, $exampleLargeDocument, $outputDocumentPath];
     }
 }
