@@ -1,7 +1,7 @@
 # deepl-php
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/DeepLcom/deepl-php.svg)](https://packagist.org/packages/DeepLcom/deepl-php)
-[![Minimum PHP version](https://img.shields.io/packagist/php-v/DeepLcom/deepl-php)](https://packagist.org/packages/DeepLcom/deepl-php)
+[![Latest Stable Version](https://img.shields.io/packagist/v/deeplcom/deepl-php.svg)](https://packagist.org/packages/deeplcom/deepl-php)
+[![Minimum PHP version](https://img.shields.io/packagist/php-v/deeplcom/deepl-php)](https://packagist.org/packages/deeplcom/deepl-php)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blueviolet.svg)](https://github.com/DeepLcom/deepl-php/blob/main/LICENSE)
 
 Official PHP client library for the DeepL API.
@@ -28,7 +28,7 @@ You can translate up to 500,000 characters/month for free.
 To use this library in your project, install it using Composer:
 
 ```shell
-composer require DeepLcom/deepl-php
+composer require deeplcom/deepl-php
 ```
 
 ### Requirements
