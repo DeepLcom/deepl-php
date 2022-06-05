@@ -126,7 +126,7 @@ The following options are only used if `tag_handling` is `'xml'`:
     sentences. Tags may be specified as an array of strings (`['tag1', 'tag2']`),
     or a comma-separated list of strings (`'tag1,tag2'`). The default is an empty
     list.
--   `non_splitting_tTags`: list of XML tags that should not be used to split text
+-   `non_splitting_tags`: list of XML tags that should not be used to split text
     into sentences. Format and default are the same as for `splitting_tags`.
 -   `ignore_tags`: list of XML tags that containing content that should not be
     translated. Format and default are the same as for `splitting_tags`.
