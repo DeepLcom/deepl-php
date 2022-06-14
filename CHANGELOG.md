@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Update contributing guidelines, we can now accept Pull Requests.
 ### Fixed
 * Fix GitLab CI config.
+* Fix a typo in the readme.
+  * Pull request [#5](https://github.com/DeepLcom/deepl-php/pull/5)
+    thanks to [MartkCz](https://github.com/MartkCz).
 
 
 ## [0.4.0] - 2022-05-24
