@@ -146,10 +146,13 @@ class DeepLTestBase extends TestCase
     public function makeTranslator(array $options = []): Translator
     {
         $mergedOptions = array_replace(
-            [TranslatorOptions::SERVER_URL => $this->serverUrl,
-                TranslatorOptions::HEADERS => $this->sessionHeaders()],
+            [TranslatorOptions::HEADERS => $this->sessionHeaders()],
             $options ?? []
         );
+
+        if ($this->serverUrl !== false) {
+            $mergedOptions[TranslatorOptions::SERVER_URL] = $this->serverUrl;
+        }
 
         return new Translator($this->authKey, $mergedOptions);
     }
