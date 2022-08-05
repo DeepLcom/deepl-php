@@ -225,7 +225,7 @@ class Translator
     public function getDocumentStatus(DocumentHandle $handle): DocumentStatus
     {
         $response = $this->client->sendRequestWithBackoff(
-            'GET',
+            'POST',
             "/v2/document/$handle->documentId",
             [HttpClient::OPTION_PARAMS => ['document_key' => $handle->documentKey]]
         );
@@ -247,7 +247,7 @@ class Translator
         }
         try {
             $response = $this->client->sendRequestWithBackoff(
-                'GET',
+                'POST',
                 "/v2/document/$handle->documentId/result",
                 [
                     HttpClient::OPTION_PARAMS => ['document_key' => $handle->documentKey],
