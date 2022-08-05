@@ -45,6 +45,11 @@ class TranslateTextOptions
     /** List of XML tags containing content that should not be translated. */
     public const IGNORE_TAGS = 'ignore_tags';
 
-    /** Set to string containing a glossary ID to use the glossary for translation. */
+    /** Set to string containing a glossary ID to use the glossary for translation.
+     *  Can also be set to a GlossaryInfo as returned by createGlossary, getGlossary or listGlossaries.
+     *  @see \DeepL\Translator::createGlossary()
+     *  @see \DeepL\Translator::getGlossary()
+     *  @see \DeepL\Translator::listGlossaries()
+     */
     public const GLOSSARY = 'glossary';
 }

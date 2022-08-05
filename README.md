@@ -13,8 +13,9 @@ developers: any translation product you can imagine can now be built on top of
 DeepL's best-in-class translation technology.
 
 The DeepL PHP library offers a convenient way for applications written for
-PHP to interact with the DeepL API. Currently, the library only supports text
-and document translation; we intend to add support for glossary management soon.
+PHP to interact with the DeepL API. We intend to support all API functions
+with the library, though support for new features may be added to the library
+after they’re added to the API.
 
 ## Getting an authentication key
 
@@ -191,6 +192,125 @@ The `uploadDocument` function also supports these options.
 The `TranslateDocumentOptions` class defines constants for the options above,
 for example `TranslateDocumentOptions::FORMALITY` is defined as `'formality'`.
 
+### Glossaries
+
+Glossaries allow you to customize your translations using user-defined terms.
+Multiple glossaries can be stored with your account, each with a user-specified
+name and a uniquely-assigned ID.
+
+#### Creating a glossary
+
+You can create a glossary with your desired terms and name using
+`createGlossary()`. Each glossary applies to a single source-target language
+pair. Note: Glossaries are only supported for some language pairs, see
+[Listing available glossary languages](#listing-available-glossary-languages)
+for more information. The entries should be specified as a `GlossaryEntries`
+object; you can create one using `GlossaryEntries::fromEntries` using an
+associative array with the source terms as keys and the target terms as values.
+
+Then use `createGlossary()` with the glossary name, source and target language
+codes and the `GlossaryEntries`. If successful, the glossary is created and
+stored with your DeepL account, and a `GlossaryInfo` object is returned
+including the ID, name, languages and entry count.
+
+```php
+// Create an English to German glossary with two terms:
+$entries = GlossaryEntries::fromEntries(['artist' => 'Maler', 'prize' => 'Gewinn']);
+$myGlossary = $translator->createGlossary('My glossary', 'en', 'de', $entries);
+echo "Created '$myGlossary->name' ($myGlossary->glossaryId) " .
+    "$myGlossary->sourceLang to $myGlossary->targetLang " .
+    "containing $myGlossary->entryCount entries";
+// Example: Created 'My glossary' (559192ed-8e23-...) en to de containing 2 entries
+```
+
+You can also upload a glossary downloaded from the DeepL website using
+`createGlossaryFromCsv()`. Similar to `createGlossary`, specify the glossary
+name, and source and target language codes, but instead of specifying the terms
+as an associative array, specify the CSV data as a string:
+
+```php
+// Read CSV data from a file, for example: "artist,Maler,en,de\nprize,Gewinn,en,de"
+$csvData = file_get_contents('/path/to/glossary_file.csv');
+$myCsvGlossary = $translator->createGlossaryFromCsv(
+    'CSV glossary',
+    'en',
+    'de',
+    $csvData,
+)
+```
+
+The [API documentation][api-docs-csv-format] explains the expected CSV format in
+detail.
+
+#### Getting, listing and deleting stored glossaries
+
+Functions to get, list, and delete stored glossaries are also provided:
+
+- `getGlossary()` takes a glossary ID and returns a `GlossaryInfo` object for a
+  stored glossary, or raises an exception if no such glossary is found.
+- `listGlossaries()` returns a list of `GlossaryInfo` objects corresponding to
+  all of your stored glossaries.
+- `deleteGlossary()` takes a glossary ID or `GlossaryInfo` object and deletes
+  the stored glossary from the server, or raises an exception if no such
+  glossary is found.
+
+```php
+// Retrieve a stored glossary using the ID
+$glossaryId = '559192ed-8e23-...';
+$myGlossary = $translator->getGlossary($glossaryId);
+
+// Find and delete glossaries named 'Old glossary'
+$glossaries = $translator->listGlossaries();
+foreach ($glossaries as $glossary) {
+    if ($glossary->name === 'Old glossary') {
+        $translator->deleteGlossary($glossary);
+    }
+}
+```
+
+#### Listing entries in a stored glossary
+
+The `GlossaryInfo` object does not contain the glossary entries, but instead
+only the number of entries in the `entryCount` property.
+
+To list the entries contained within a stored glossary, use
+`getGlossaryEntries()` providing either the `GlossaryInfo` object or glossary
+ID. A `GlossaryEntries` object is returned; you can access the entries as an
+associative array using `getEntries()`:
+
+```php
+$entries = $translator->getGlossaryEntries($myGlossary);
+print_r($entries->getEntries()); // Array ( [artist] => Maler, [prize] => Gewinn)
+```
+
+#### Using a stored glossary
+
+You can use a stored glossary for text translation by setting the `glossary`
+option to either the glossary ID or `GlossaryInfo` object. You must also
+specify the `sourceLang` argument (it is required when using a glossary):
+
+```php
+$text = 'The artist was awarded a prize.';
+$withGlossary = $translator->translateText($text, 'en', 'de', ['glossary' => $myGlossary]);
+echo $withGlossary->text; // "Der Maler wurde mit einem Gewinn ausgezeichnet."
+
+// For comparison, the result without a glossary:
+$withGlossary = $translator->translateText($text, null, 'de');
+echo $withoutGlossary->text; // "Der Künstler wurde mit einem Preis ausgezeichnet."
+```
+
+Using a stored glossary for document translation is the same: set the `glossary`
+option. The `sourceLang` argument must also be specified:
+
+```php
+$translator->translateDocument(
+    $inFile, $outFile, 'en', 'de', ['glossary' => $myGlossary]
+)
+```
+
+The `translateDocument()`  and `translateDocumentUpload()` functions both
+support the `glossary` argument.
+
 ### Checking account usage
 
 To check account usage, use the `getUsage()` function.
@@ -242,6 +362,28 @@ foreach ($targetLanguages as $targetLanguage) {
     }
 }
 ```
+
+#### Listing available glossary languages
+
+Glossaries are supported for a subset of language pairs. To retrieve those
+languages use the `getGlossaryLanguages()` function, which returns an array
+of `GlossaryLanguagePair` objects. Each has `sourceLang` and `targetLang`
+properties indicating that that pair of language codes is supported.
+
+```php
+$glossaryLanguages = $translator->getGlossaryLanguages();
+foreach ($glossaryLanguages as $glossaryLanguage) {
+    echo "$glossaryLanguage->sourceLang to $glossaryLanguage->targetLang";
+    // Example: "en to de", "de to en", etc.
+}
+```
+
+You can also find the list of supported glossary language pairs in the
+[API documentation][api-docs-glossary-lang-list].
+
+Note that glossaries work for all target regional-variants: a glossary for the
+target language English (`'en'`) supports translations to both American English
+(`'en-US'`) and British English (`'en-GB'`).
 
 ### Configuration
 
@@ -314,6 +456,10 @@ environment variables defined referring to the mock-server.
 
 
 [api-docs]: https://www.deepl.com/docs-api?utm_source=github&utm_medium=github-php-readme
+
+[api-docs-csv-format]: https://www.deepl.com/docs-api/managing-glossaries/supported-glossary-formats/?utm_source=github&utm_medium=github-php-readme
+
+[api-docs-glossary-lang-list]: https://www.deepl.com/docs-api/managing-glossaries/?utm_source=github&utm_medium=github-php-readme
 
 [create-account]: https://www.deepl.com/pro?utm_source=github&utm_medium=github-php-readme#developer
 

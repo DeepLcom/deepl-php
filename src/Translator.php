@@ -77,7 +77,7 @@ class Translator
     }
 
     /**
-     * Queries source languages supported by DeepL API.
+     * Queries source languages supported by the DeepL API.
      * @return Language[] Array of Language objects containing available source languages.
      * @throws DeepLException
      */
@@ -87,13 +87,34 @@ class Translator
     }
 
     /**
-     * Queries target languages supported by DeepL API.
+     * Queries target languages supported by the DeepL API.
      * @return Language[] Array of Language objects containing available target languages.
      * @throws DeepLException
      */
     public function getTargetLanguages(): array
     {
         return $this->getLanguages(true);
+    }
+
+    /**
+     * Queries languages supported for glossaries by the DeepL API.
+     * @return GlossaryLanguagePair[] Array of GlossaryLanguagePair objects containing available glossary languages.
+     * @throws DeepLException
+     */
+    public function getGlossaryLanguages(): array
+    {
+        $response = $this->client->sendRequestWithBackoff('GET', '/v2/glossary-language-pairs');
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+
+        $decoded = json_decode($content, true);
+        $result = [];
+        foreach ($decoded['supported_languages'] as $lang) {
+            $sourceLang = $lang['source_lang'];
+            $targetLang = $lang['target_lang'];
+            $result[] = new GlossaryLanguagePair($sourceLang, $targetLang);
+        }
+        return $result;
     }
 
     /**
@@ -289,7 +310,143 @@ class Translator
     }
 
     /**
-     * Queries source or target languages supported by DeepL API.
+     * Creates a new glossary on DeepL server with given name, languages, and entries.
+     * @param string $name User-defined name to assign to the glossary.
+     * @param string $sourceLang Language code of the glossary source terms.
+     * @param string $targetLang Language code of the glossary target terms.
+     * @param GlossaryEntries $entries The source- & target-term pairs to add to the glossary.
+     * @return GlossaryInfo Details about the created glossary.
+     * @throws DeepLException
+     */
+    public function createGlossary(
+        string $name,
+        string $sourceLang,
+        string $targetLang,
+        GlossaryEntries $entries
+    ): GlossaryInfo {
+        // Glossaries are only supported for base language types
+        $sourceLang = LanguageCode::removeRegionalVariant($sourceLang);
+        $targetLang = LanguageCode::removeRegionalVariant($targetLang);
+
+        if (strlen($name) === 0) {
+            throw new DeepLException('glossary name must be a non-empty string');
+        }
+
+        $params = [
+            'name' => $name,
+            'source_lang' => $sourceLang,
+            'target_lang' => $targetLang,
+            'entries_format' => 'tsv',
+            'entries' => $entries->convertToTsv(),
+        ];
+
+        $response = $this->client->sendRequestWithBackoff(
+            'POST',
+            '/v2/glossaries',
+            [HttpClient::OPTION_PARAMS => $params]
+        );
+        $this->checkStatusCode($response, false, true);
+        list(, $content) = $response;
+        return GlossaryInfo::parse($content);
+    }
+
+    /**
+     * Creates a new glossary on DeepL server with given name, languages, and entries.
+     * @param string $name User-defined name to assign to the glossary.
+     * @param string $sourceLang Language code of the glossary source terms.
+     * @param string $targetLang Language code of the glossary target terms.
+     * @param string $csvContent String containing CSV content.
+     * @return GlossaryInfo Details about the created glossary.
+     * @throws DeepLException
+     */
+    public function createGlossaryFromCsv(
+        string $name,
+        string $sourceLang,
+        string $targetLang,
+        string $csvContent
+    ): GlossaryInfo {
+        // Glossaries are only supported for base language types
+        $sourceLang = LanguageCode::removeRegionalVariant($sourceLang);
+        $targetLang = LanguageCode::removeRegionalVariant($targetLang);
+
+        if (strlen($name) === 0) {
+            throw new DeepLException('glossary name must be a non-empty string');
+        }
+
+        $params = [
+            'name' => $name,
+            'source_lang' => $sourceLang,
+            'target_lang' => $targetLang,
+            'entries_format' => 'csv',
+            'entries' => $csvContent,
+        ];
+
+        $response = $this->client->sendRequestWithBackoff(
+            'POST',
+            '/v2/glossaries',
+            [HttpClient::OPTION_PARAMS => $params]
+        );
+        $this->checkStatusCode($response, false, true);
+        list(, $content) = $response;
+        return GlossaryInfo::parse($content);
+    }
+
+    /**
+     * Gets information about an existing glossary.
+     * @param string $glossaryId Glossary ID of the glossary.
+     * @return GlossaryInfo GlossaryInfo containing details about the glossary.
+     * @throws DeepLException
+     */
+    public function getGlossary(string $glossaryId): GlossaryInfo
+    {
+        $response = $this->client->sendRequestWithBackoff('GET', "/v2/glossaries/$glossaryId");
+        $this->checkStatusCode($response, false, true);
+        list(, $content) = $response;
+        return GlossaryInfo::parse($content);
+    }
+
+    /**
+     * Gets information about all existing glossaries.
+     * @return GlossaryInfo[] Array of GlossaryInfos containing details about all existing glossaries.
+     * @throws DeepLException
+     */
+    public function listGlossaries(): array
+    {
+        $response = $this->client->sendRequestWithBackoff('GET', '/v2/glossaries');
+        $this->checkStatusCode($response, false, true);
+        list(, $content) = $response;
+        return GlossaryInfo::parseList($content);
+    }
+
+    /**
+     * Retrieves the entries stored with the glossary with the given glossary ID or GlossaryInfo.
+     * @param string|GlossaryInfo $glossary Glossary ID or GlossaryInfo of glossary to retrieve entries of.
+     * @return GlossaryEntries The entries stored in the glossary.
+     * @throws DeepLException
+     */
+    public function getGlossaryEntries($glossary): GlossaryEntries
+    {
+        $glossaryId = is_string($glossary) ? $glossary : $glossary->glossaryId;
+        $response = $this->client->sendRequestWithBackoff('GET', "/v2/glossaries/$glossaryId/entries");
+        $this->checkStatusCode($response, false, true);
+        list(, $content) = $response;
+        return GlossaryEntries::fromTsv($content);
+    }
+
+    /**
+     * Deletes the glossary with the given glossary ID or GlossaryInfo.
+     * @param string|GlossaryInfo $glossary Glossary ID or GlossaryInfo of glossary to be deleted.
+     * @throws DeepLException
+     */
+    public function deleteGlossary($glossary): void
+    {
+        $glossaryId = is_string($glossary) ? $glossary : $glossary->glossaryId;
+        $response = $this->client->sendRequestWithBackoff('DELETE', "/v2/glossaries/$glossaryId");
+        $this->checkStatusCode($response, false, true);
+    }
+
+    /**
+     * Queries source or target languages supported by the DeepL API.
      * @param bool $target Query target languages if true, source languages otherwise.
      * @return Language[] Array of Language objects containing available languages.
      * @throws DeepLException
@@ -335,7 +492,7 @@ class Translator
      * @param string|null $sourceLang Source language code, or null to use auto-detection.
      * @param string $targetLang Target language code.
      * @param string|null $formality Formality option, or null if not specified.
-     * @param string|null $glossary Glossary ID, or null if not specified.
+     * @param string|GlossaryInfo|null $glossary Glossary ID, GlossaryInfo, or null if not specified.
      * @return array Associative array of HTTP parameters.
      * @throws DeepLException
      */
@@ -343,7 +500,7 @@ class Translator
         ?string $sourceLang,
         string $targetLang,
         ?string $formality,
-        ?string $glossary
+        $glossary
     ): array {
         $targetLang = LanguageCode::standardizeLanguageCode($targetLang);
         if (isset($sourceLang)) {
@@ -367,6 +524,12 @@ class Translator
             }
         }
         if (isset($glossary)) {
+            if (!isset($sourceLang)) {
+                throw new DeepLException('sourceLang is required if using a glossary');
+            }
+            if (!is_string($glossary)) {
+                $glossary = $glossary->glossaryId;
+            }
             $params['glossary_id'] = $glossary;
         }
         return $params;
@@ -483,7 +646,7 @@ class Translator
                 throw new QuotaExceededException("Quota for this billing period has been exceeded$message");
             case 404:
                 if ($usingGlossary) {
-                    throw new DeepLException("Glossary not found$message");
+                    throw new GlossaryNotFoundException("Glossary not found$message");
                 }
                 throw new NotFoundException("Not found, check server_url$message");
             case 400:

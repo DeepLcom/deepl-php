@@ -66,6 +66,20 @@ class GeneralTest extends DeepLTestBase
         }
     }
 
+    /**
+     * @throws DeepLException
+     */
+    public function testGlossaryLanguage()
+    {
+        $translator = $this->makeTranslator();
+        $glossaryLanguagePairs = $translator->getGlossaryLanguages();
+        $this->assertGreaterThan(0, count($glossaryLanguagePairs));
+        foreach ($glossaryLanguagePairs as $glossaryLanguagePair) {
+            $this->assertGreaterThan(0, strlen($glossaryLanguagePair->sourceLang));
+            $this->assertGreaterThan(0, strlen($glossaryLanguagePair->targetLang));
+        }
+    }
+
     public function testUsageNoResponse()
     {
         $this->needsMockServer();

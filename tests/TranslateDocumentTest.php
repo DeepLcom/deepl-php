@@ -124,12 +124,12 @@ class TranslateDocumentTest extends DeepLTestBase
         $this->assertFalse($status->done());
 
         // Calling download() before document is ready will fail
-        try {
-            $translator->downloadDocument($handle, $outputDocumentPath);
-            $this->fail('Expected exception to be thrown');
-        } catch (\DeepL\DocumentNotReadyException $error) {
-            $this->assertStringContainsString('Document not ready', $error->getMessage());
-        }
+        $this->assertExceptionContains(
+            'Document not ready',
+            function () use ($translator, $handle, $outputDocumentPath) {
+                $translator->downloadDocument($handle, $outputDocumentPath);
+            }
+        );
 
         // Test recreating a document handle from id & key
         $handle = new \DeepL\DocumentHandle($handle->documentId, $handle->documentKey);

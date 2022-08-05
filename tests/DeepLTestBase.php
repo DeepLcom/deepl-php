@@ -202,4 +202,26 @@ class DeepLTestBase extends TestCase
 
         return [$tempDir, $exampleDocument, $exampleLargeDocument, $outputDocumentPath];
     }
+
+    public function assertExceptionContains(string $needle, callable $function): \Exception
+    {
+        try {
+            $function();
+        } catch (\Exception $exception) {
+            $this->assertStringContainsString($needle, $exception->getMessage());
+            return $exception;
+        }
+        $this->fail("Expected exception containing '$needle' but nothing was thrown");
+    }
+
+    public function assertExceptionClass($class, callable $function): \Exception
+    {
+        try {
+            $function();
+        } catch (\Exception $exception) {
+            $this->assertEquals($class, get_class($exception));
+            return $exception;
+        }
+        $this->fail("Expected exception of class '$class' but nothing was thrown");
+    }
 }

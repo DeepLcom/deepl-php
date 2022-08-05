@@ -152,15 +152,15 @@ class HttpClient
             return "$key: $value";
         }, array_keys($headers), array_values($headers));
 
-        if ($filePath === null) {
+        if ($filePath !== null) {
+            // If a file is to be uploaded, add it to the list of body parameters
+            $params['file'] = \curl_file_create($filePath);
+            $curlOptions[\CURLOPT_POSTFIELDS] = $params;
+        } elseif (count($params) > 0) {
             // If there are repeated parameters, passing the parameters directly to cURL will index the repeated
             // parameters which is not what we need, so instead we encode the parameters without indexes.
             // This case only occurs if no file is uploaded.
             $curlOptions[\CURLOPT_POSTFIELDS] = $this->urlEncodeWithRepeatedParams($params);
-        } else {
-            // If a file is to be uploaded, add it to the list of body parameters
-            $params['file'] = \curl_file_create($filePath);
-            $curlOptions[\CURLOPT_POSTFIELDS] = $params;
         }
 
         if ($outFile) {
