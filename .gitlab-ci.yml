@@ -1,3 +1,11 @@
+# Note: This GitLab CI configuration is used for internal testing, users can ignore it.
+include:
+  - project: '${CI_PROJECT_NAMESPACE}/ci-libs-for-client-libraries'
+    file:
+      - '/${CI_PROJECT_NAME}/.gitlab-ci.yml'
+
+# Global --------------------------
+
 image: php:latest
 
 cache:
@@ -42,9 +50,7 @@ code sniffer:
 
 test:
   stage: test
-  services:
-    - name: $DOCKER_REGISTRY/deepl/deepl-mock
-      alias: deepl-mock
+  extends: .test
   parallel:
     matrix:
       - DOCKER_IMAGE: "php:8.1"
@@ -75,12 +81,5 @@ test:
       junit:
         - reports/junit.xml
     when: always
-  secrets:
-    DEEPL_AUTH_KEY:
-      vault: jenkins/client_libraries/test_auth_key@backend
-      file: false
-    DEEPL_SERVER_URL:
-      vault: jenkins/client_libraries/test_server_url@backend
-      file: false
 
 
