@@ -55,6 +55,7 @@ class DeepLTestBase extends TestCase
         'sl' => 'protonski žarek',
         'sv' => 'protonstråle',
         'tr' => 'proton ışını',
+        'uk' => 'протонний пучок',
         'zh' => '质子束',
     ];
 
