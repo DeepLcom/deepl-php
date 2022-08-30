@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * New language available: Ukrainian (`'uk'`). Add language code constant and tests.
 
   Note: older library versions also support new languages, this update only adds new code constant.
+* Add proxy support.
 
 
 ## [0.4.1] - 2022-08-12

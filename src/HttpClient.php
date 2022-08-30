@@ -17,6 +17,7 @@ class HttpClient
     private $maxRetries;
     private $minTimeout;
     private $logger;
+    private $proxy;
 
     /**
      * @var resource cURL handle.
@@ -33,13 +34,15 @@ class HttpClient
         array            $headers,
         float            $timeout,
         int              $maxRetries,
-        ?LoggerInterface $logger
+        ?LoggerInterface $logger,
+        ?string $proxy
     ) {
         $this->serverUrl = $serverUrl;
         $this->maxRetries = $maxRetries;
         $this->minTimeout = $timeout;
         $this->headers = $headers;
         $this->logger = $logger;
+        $this->proxy = $proxy;
         $this->curlHandle = \curl_init();
     }
 
@@ -146,6 +149,10 @@ class HttpClient
         $curlOptions[\CURLOPT_URL] = $url;
         $curlOptions[\CURLOPT_CONNECTTIMEOUT] = $timeout;
         $curlOptions[\CURLOPT_TIMEOUT_MS] = $timeout * 1000;
+
+        if ($this->proxy !== null) {
+            $curlOptions[\CURLOPT_PROXY] = $this->proxy;
+        }
 
         // Convert headers from an associative array to an array of "key: value" elements
         $curlOptions[\CURLOPT_HTTPHEADER] = \array_map(function (string $key, string $value): string {

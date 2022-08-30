@@ -13,7 +13,9 @@ class DeepLTestBase extends TestCase
 {
     protected $authKey;
     protected $serverUrl;
+    protected $proxyUrl;
     protected $isMockServer;
+    protected $isMockProxyServer;
 
     protected $sessionNoResponse;
     protected $session429Count;
@@ -70,7 +72,9 @@ class DeepLTestBase extends TestCase
         $this->EXAMPLE_LARGE_DOCUMENT_OUTPUT = str_repeat(DeepLTestBase::EXAMPLE_TEXT['de'] . PHP_EOL, 1000);
 
         $this->serverUrl = getenv('DEEPL_SERVER_URL');
+        $this->proxyUrl = getenv('DEEPL_PROXY_URL');
         $this->isMockServer = getenv('DEEPL_MOCK_SERVER_PORT') !== false;
+        $this->isMockProxyServer = $this->isMockServer && getenv('DEEPL_MOCK_PROXY_SERVER_PORT') !== false;
 
         if ($this->isMockServer) {
             $this->authKey = 'mock_server';
@@ -91,6 +95,13 @@ class DeepLTestBase extends TestCase
     {
         if (!$this->isMockServer) {
             self::markTestSkipped('Test requires mock server');
+        }
+    }
+
+    protected function needsMockProxyServer()
+    {
+        if (!$this->isMockProxyServer) {
+            self::markTestSkipped('Test requires mock proxy server');
         }
     }
 

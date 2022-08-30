@@ -408,10 +408,24 @@ Provide the options as an associative array with the following keys:
 - `headers`: extra HTTP headers attached to every HTTP request. By default, no
     extra headers are used. Note that Authorization and User-Agent headers are
     added automatically but may be overridden by this option.
+- `proxy`: specify a proxy server URL.
 - `logger`: specify a [`PSR-3` compatible logger][PSR-3-logger] that the library
     should log messages to.
 
 The `TranslatorOptions` class defines constants for the options above.
+
+#### Proxy configuration
+
+You can configure a proxy using the `proxy` option when constructing a
+`Translator`:
+
+```php
+$proxy = 'http://user:pass@10.10.1.10:3128';
+$translator = new \DeepL\Translator('YOUR_AUTH_KEY', ['proxy' => $proxy]);
+```
+
+The proxy option is used for the `CURLOPT_PROXY` option when preparing the cURL
+request, see the [documentation for cURL][curl-proxy-docs].
 
 #### Logging
 
@@ -462,6 +476,8 @@ environment variables defined referring to the mock-server.
 [api-docs-glossary-lang-list]: https://www.deepl.com/docs-api/managing-glossaries/?utm_source=github&utm_medium=github-php-readme
 
 [create-account]: https://www.deepl.com/pro?utm_source=github&utm_medium=github-php-readme#developer
+
+[curl-proxy-docs]: https://www.php.net/manual/en/function.curl-setopt.php
 
 [deepl-mock]: https://www.github.com/DeepLcom/deepl-mock
 

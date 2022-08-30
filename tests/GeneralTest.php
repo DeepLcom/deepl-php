@@ -80,6 +80,22 @@ class GeneralTest extends DeepLTestBase
         }
     }
 
+    /**
+     * @throws DeepLException
+     */
+    public function testProxyUsage()
+    {
+        $this->needsMockProxyServer();
+        $this->sessionExpectProxy = true;
+        $translatorWithoutProxy = $this->makeTranslator();
+        $translatorWithProxy = $this->makeTranslator([TranslatorOptions::PROXY => $this->proxyUrl]);
+
+        $translatorWithProxy->getUsage();
+
+        $this->expectException(DeepLException::class);
+        $translatorWithoutProxy->getUsage();
+    }
+
     public function testUsageNoResponse()
     {
         $this->needsMockServer();

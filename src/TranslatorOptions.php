@@ -40,6 +40,11 @@ class TranslatorOptions
     public const MAX_RETRIES = 'max_retries';
 
     /**
+     * Proxy server URL, for example 'https://user:pass@10.10.1.10:3128'.
+     */
+    public const PROXY = 'proxy';
+
+    /**
      * The PSR-3 compatible logger to log messages to.
      * @see LoggerInterface
      */

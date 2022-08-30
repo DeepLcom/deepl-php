@@ -60,7 +60,9 @@ class Translator
 
         $logger = $options[TranslatorOptions::LOGGER] ?? null;
 
-        $this->client = new HttpClient($serverUrl, $headers, $timeout, $maxRetries, $logger);
+        $proxy = $options[TranslatorOptions::PROXY] ?? null;
+
+        $this->client = new HttpClient($serverUrl, $headers, $timeout, $maxRetries, $logger, $proxy);
     }
 
     /**
