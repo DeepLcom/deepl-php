@@ -112,9 +112,14 @@ using the following keys:
     to prevent automatic-correction of formatting, default: `false`.
 -   `formality`: controls whether translations should lean toward informal or
     formal language. This option is only available for some target languages, see
-    [Listing available languages](#listing-available-languages).
-    -   `'less'`: use informal language.
-    -   `'more'`: use formal, more polite language.
+    [Listing available languages](#listing-available-languages). Use the
+    `prefer_*` options to apply formality if it is available for the target
+    language, or otherwise fallback to the default.  
+    - `'less'`: use informal language.
+    - `'more'`: use formal, more polite language.
+    - `'default'`: use default formality.
+    - `'prefer_less'`: use informal language if available, otherwise default.
+    - `'prefer_more'`: use formal, more polite language if available, otherwise default.
 -   `tag_handling`: type of tags to parse before translation, options are `'html'`
     and `'xml'`.
 -   `glossary`: glossary ID of glossary to use for translation.

@@ -13,7 +13,13 @@ namespace DeepL;
  */
 final class TranslateDocumentOptions
 {
-    /** Controls whether translations should lean toward formal or informal language. */
+    /** Controls whether translations should lean toward formal or informal language.
+     * - 'less': use informal language.
+     * - 'more': use formal, more polite language.
+     * - 'default': use default formality.
+     * - 'prefer_less': use informal language if available, otherwise default.
+     * - 'prefer_more': use formal, more polite language if available, otherwise default.
+     */
     public const FORMALITY = 'formality';
 
     /** Set to string containing a glossary ID to use the glossary for translation. */

@@ -27,7 +27,13 @@ class TranslateTextOptions
      * instead leave the formatting unchanged, default is false. */
     public const PRESERVE_FORMATTING = 'preserve_formatting';
 
-    /** Controls whether translations should lean toward formal or informal language. */
+    /** Controls whether translations should lean toward formal or informal language.
+     * - 'less': use informal language.
+     * - 'more': use formal, more polite language.
+     * - 'default': use default formality.
+     * - 'prefer_less': use informal language if available, otherwise default.
+     * - 'prefer_more': use formal, more polite language if available, otherwise default.
+     */
     public const FORMALITY = 'formality';
 
     /** Type of tags to parse before translation, options are 'html' and 'xml'. */
