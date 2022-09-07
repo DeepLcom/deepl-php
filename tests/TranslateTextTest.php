@@ -141,6 +141,20 @@ class TranslateTextTest extends DeepLTestBase
             'de',
             [TranslateTextOptions::FORMALITY => 'MORE']
         )->text);
+
+        // prefer_* tests
+        $this->assertEquals($informal, $translator->translateText(
+            $input,
+            null,
+            'de',
+            [TranslateTextOptions::FORMALITY => 'prefer_less']
+        )->text);
+        $this->assertEquals($formal, $translator->translateText(
+            $input,
+            null,
+            'de',
+            [TranslateTextOptions::FORMALITY => 'prefer_more']
+        )->text);
     }
 
     public function testInvalidFormality()
