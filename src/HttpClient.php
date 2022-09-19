@@ -215,8 +215,8 @@ class HttpClient
         }
         list($statusCode, ) = $response;
 
-        // Retry on Too-Many-Requests error and internal errors except Service-Unavailable errors
-        return $statusCode === 429 || ($statusCode >= 500 && $statusCode !== 503);
+        // Retry on Too-Many-Requests error and internal errors
+        return $statusCode === 429 || $statusCode >= 500;
     }
 
     public function logDebug(string $message): void

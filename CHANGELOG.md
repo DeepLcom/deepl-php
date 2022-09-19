@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+### Changed
+* Requests resulting in `503 Service Unavailable` errors are now retried.
+  Attempting to download a document before translation is completed will now
+  wait and retry (up to 5 times by default), rather than throwing an exception.
+
+
 ## [1.0.0] - 2022-09-08
 Stable release.
 ### Added
@@ -54,6 +61,7 @@ Stable release.
 Initial version.
 
 
+[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/DeepLcom/deepl-php/compare/v0.4.1...v1.0.0
 [0.4.1]: https://github.com/DeepLcom/deepl-php/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/DeepLcom/deepl-php/compare/v0.3.0...v0.4.0
