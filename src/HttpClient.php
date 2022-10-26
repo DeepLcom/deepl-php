@@ -6,6 +6,8 @@
 
 namespace DeepL;
 
+use Psr\Log\LoggerInterface;
+
 /**
  * Internal class implementing HTTP requests.
  * @private
