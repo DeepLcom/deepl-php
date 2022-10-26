@@ -10,6 +10,7 @@
     ],
     "require": {
         "php": ">=7.3.0",
+        "psr/log": "^1.1 || ^2.0 || ^3.0",
         "ext-json": "*",
         "ext-curl": "*",
         "ext-mbstring": "*"
