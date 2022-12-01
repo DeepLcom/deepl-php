@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.2.0] - 2022-11-11
+### Changed
+* Added dependency on `psr/log`. As this package forms a PHP Standard
+  Recommendation, we don't consider it to break backward-compatibility.
+### Fixed
+* Change the type of the `TranslatorOptions::LOGGER` option to 
+  `Psr\Log\LoggerInterface`, to correctly support PSR-3 loggers.
+  * Pull request [#12](https://github.com/DeepLcom/deepl-php/pull/12)
+    thanks to [Schleuse](https://github.com/Schleuse).
+
+
 ## [1.1.0] - 2022-09-28
 ### Added
 * Add new formality options: `'prefer_less'` and `'prefer_more'`.
@@ -63,6 +74,7 @@ Stable release.
 Initial version.
 
 
+[1.2.0]: https://github.com/DeepLcom/deepl-php/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/DeepLcom/deepl-php/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/DeepLcom/deepl-php/compare/v0.4.1...v1.0.0
 [0.4.1]: https://github.com/DeepLcom/deepl-php/compare/v0.4.0...v0.4.1
