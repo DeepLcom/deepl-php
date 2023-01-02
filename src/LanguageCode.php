@@ -62,11 +62,17 @@ class LanguageCode
     /** Japanese language code, may be used as source or target language. */
     public const JAPANESE = 'ja';
 
+    /** Korean language code, may be used as source or target language. */
+    public const KOREAN = 'ko';
+
     /** Lithuanian language code, may be used as source or target language. */
     public const LITHUANIAN = 'lt';
 
     /** Latvian language code, may be used as source or target language. */
     public const LATVIAN = 'lv';
+
+    /** Norwegian (bokmål) language code, may be used as source or target language. */
+    public const NORWEGIAN = 'nb';
 
     /** Dutch language code, may be used as source or target language. */
     public const DUTCH = 'nl';
