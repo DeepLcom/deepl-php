@@ -683,7 +683,7 @@ class Translator
     /**
      * Returns true if the specified DeepL Authentication Key is associated with a free account,
      * otherwise false.
-     * @param string authKey The authentication key to check.
+     * @param string $authKey The authentication key to check.
      * @return bool True if the key is associated with a free account, otherwise false.
      */
     public static function isAuthKeyFreeAccount(string $authKey): bool
