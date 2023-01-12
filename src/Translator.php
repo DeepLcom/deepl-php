@@ -490,6 +490,16 @@ class Translator
     }
 
     /**
+     * Returns '1' if the argument is truthy, otherwise '0'.
+     * @param mixed $arg Argument to check.
+     * @return string '1' or '0'.
+     */
+    private function toBoolString($arg): string
+    {
+        return $arg ? '1' : '0';
+    }
+
+    /**
      * Validates and prepares HTTP parameters for arguments common to text and document translation.
      * @param string|null $sourceLang Source language code, or null to use auto-detection.
      * @param string $targetLang Target language code.
@@ -521,9 +531,7 @@ class Translator
         }
         if (isset($formality)) {
             $formality_str = strtolower($formality);
-            if ($formality_str !== 'default') {
-                $params['formality'] = $formality_str;
-            }
+            $params['formality'] = $formality_str;
         }
         if (isset($glossary)) {
             if (!isset($sourceLang)) {
@@ -591,15 +599,16 @@ class Translator
                     break;
             }
         }
-        if ($options[TranslateTextOptions::PRESERVE_FORMATTING] ?? false) {
-            $params[TranslateTextOptions::PRESERVE_FORMATTING] = '1';
+        if (isset($options[TranslateTextOptions::PRESERVE_FORMATTING])) {
+            $params[TranslateTextOptions::PRESERVE_FORMATTING] =
+                $this->toBoolString($options[TranslateTextOptions::PRESERVE_FORMATTING]);
         }
         if (isset($options[TranslateTextOptions::TAG_HANDLING])) {
             $params[TranslateTextOptions::TAG_HANDLING] = $options[TranslateTextOptions::TAG_HANDLING];
         }
-        if (isset($options[TranslateTextOptions::OUTLINE_DETECTION]) &&
-            $options[TranslateTextOptions::OUTLINE_DETECTION] === false) {
-            $params[TranslateTextOptions::OUTLINE_DETECTION] = '0';
+        if (isset($options[TranslateTextOptions::OUTLINE_DETECTION])) {
+            $params[TranslateTextOptions::OUTLINE_DETECTION] =
+                $this->toBoolString($options[TranslateTextOptions::OUTLINE_DETECTION]);
         }
         if (isset($options[TranslateTextOptions::NON_SPLITTING_TAGS])) {
             $params[TranslateTextOptions::NON_SPLITTING_TAGS] =
