@@ -51,7 +51,10 @@ class Translator
         $headers = array_replace(
             [
                 'Authorization' => "DeepL-Auth-Key $authKey",
-                'User-Agent' => 'deepl-php/1.3.0',
+                'User-Agent' => self::constructUserAgentString(
+                    $options[TranslatorOptions::SEND_PLATFORM_INFO] ?? true,
+                    $options[TranslatorOptions::APP_INFO] ?? null
+                ),
             ],
             $options[TranslatorOptions::HEADERS] ?? []
         );
@@ -709,5 +712,20 @@ class Translator
     public static function isAuthKeyFreeAccount(string $authKey): bool
     {
         return substr($authKey, -3) === ':fx';
+    }
+
+    private static function constructUserAgentString(bool $sendPlatformInfo, ?AppInfo $appInfo): string
+    {
+        $libraryVersion = self::VERSION;
+        $libraryInfoStr = "deepl-php/$libraryVersion";
+        if ($sendPlatformInfo) {
+            $platformStr = php_uname('s r v m');
+            $phpVersion = phpversion();
+            $libraryInfoStr .= " ($platformStr) php/$phpVersion";
+        }
+        if (!is_null($appInfo)) {
+            $libraryInfoStr .= " $appInfo->appName/$appInfo->appVersion";
+        }
+        return $libraryInfoStr;
     }
 }

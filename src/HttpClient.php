@@ -181,11 +181,14 @@ class HttpClient
         }
 
         \curl_reset($this->curlHandle);
-        \curl_setopt_array($this->curlHandle, $curlOptions);
 
-        $result = \curl_exec($this->curlHandle);
+        // The next 3 curl calls are unqualified so that we can mock them, see
+        // https://github.com/php-mock/php-mock-phpunit#restrictions
+        curl_setopt_array($this->curlHandle, $curlOptions);
+
+        $result = curl_exec($this->curlHandle);
         if ($result !== false) {
-            $statusCode = \curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
+            $statusCode = curl_getinfo($this->curlHandle, CURLINFO_HTTP_CODE);
             return [$statusCode, $result];
         } else {
             $errorMessage = \curl_error($this->curlHandle);

@@ -390,6 +390,21 @@ Note that glossaries work for all target regional-variants: a glossary for the
 target language English (`'en'`) supports translations to both American English
 (`'en-US'`) and British English (`'en-GB'`).
 
+### Writing a Plugin
+
+If you use this library in an application, please identify the application with
+the `app_info` TranslatorOption, which needs the name and version of the app:
+
+```php
+$options = ['app_info' => new \DeepL\AppInfo('my-custom-php-chat-client', '1.2.3')];
+$translator = new \DeepL\Translator('YOUR_AUTH_KEY', $options);
+```
+
+This information is passed along when the library makes calls to the DeepL API.
+Both name and version are required. Please note that setting the `User-Agent` header
+via the `headers` TranslatorOption will override this setting, if you need to use this,
+please manually identify your Application in the `User-Agent` header.
+
 ### Configuration
 
 The `Translator` constructor accepts configuration options as a second argument,
@@ -436,6 +451,24 @@ request, see the [documentation for cURL][curl-proxy-docs].
 
 To enable logging, specify a [`PSR-3` compatible logger][PSR-3-logger] as the 
 `'logger'` option in the `Translator` configuration options.
+
+#### Anonymous platform information
+
+By default, we send some basic information about the platform the client library is running on with each request, see [here for an explanation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent). This data is completely anonymous and only used to improve our product, not track any individual users. If you do not wish to send this data, you can opt-out when creating your `Translator` object by setting the `send_platform_option` flag in the options like so:
+
+```php
+$translator = new \DeepL\Translator('YOUR_AUTH_KEY', ['send_platform_info' => false]);
+```
+
+You can also customize the `User-Agent` header completely by setting its value explicitly in the options via the `headers` field (this overrides the `send_platform_option` option). For example::
+
+```php
+$headers = [
+    'Authorization' => "DeepL-Auth-Key YOUR_AUTH_KEY",
+    'User-Agent' => 'my-custom-php-client',
+];
+$translator = new \DeepL\Translator('YOUR_AUTH_KEY', ['headers' => $headers]);
+```
 
 ### Request retries
 

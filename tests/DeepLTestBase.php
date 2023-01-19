@@ -11,6 +11,8 @@ use Ramsey\Uuid\Uuid;
 
 class DeepLTestBase extends TestCase
 {
+    use \phpmock\phpunit\PHPMock;
+
     protected $authKey;
     protected $serverUrl;
     protected $proxyUrl;
@@ -237,5 +239,21 @@ class DeepLTestBase extends TestCase
             return $exception;
         }
         $this->fail("Expected exception of class '$class' but nothing was thrown");
+    }
+
+    /**
+     * This is necessary due to https://github.com/php-mock/php-mock-phpunit#restrictions
+     * In short, as these methods can be called by other tests before UserAgentTest and other
+     * tests that use their mocks are executed, we need to call `defineFunctionMock` before
+     * calling the unmocked function, or the mock will not work.
+     * Otherwise the tests will fail with:
+     *     Expectation failed for method name is "delegate" when invoked 1 time(s).
+     *     Method was expected to be called 1 times, actually called 0 times.
+     */
+    public static function setUpBeforeClass(): void
+    {
+        self::defineFunctionMock(__NAMESPACE__, 'curl_exec');
+        self::defineFunctionMock(__NAMESPACE__, 'curl_getinfo');
+        self::defineFunctionMock(__NAMESPACE__, 'curl_setopt_array');
     }
 }

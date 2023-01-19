@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 * Script to check our source code for license headers and a step for them in the CI.
+* Added platform and node version information to the user-agent string that is sent with API calls, along with an opt-out.
+* Add method for applications that use this library to identify themselves in API requests they make.
 ### Fixed
 * Fix getUsage request to be a HTTP GET request, not POST.
 * Changed document translation to poll the server every 5 seconds. This should greatly reduce observed document translation processing time.
+
 
 
 ## [1.3.0] - 2023-01-26

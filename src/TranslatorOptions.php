@@ -61,4 +61,14 @@ class TranslatorOptions
 
     /** The default maximum number of request retries (if MAX_RETRIES is unspecified) is 5. */
     public const DEFAULT_MAX_RETRIES = 5;
+
+    /**
+     * Flag that determines if the library sends more detailed information about the platform it runs
+     * on with each API call. This is overriden if the User-Agent header is set in the HEADERS field.
+     * @see HEADERS
+     */
+    public const SEND_PLATFORM_INFO = 'send_platform_info';
+
+    /** Name and version of the application that uses this client library. */
+    public const APP_INFO = 'app_info';
 }
