@@ -56,6 +56,13 @@ code sniffer:
   script:
     - vendor/bin/phpcs
 
+licenseCheck:
+  stage: check
+  image: ${DOCKER_IMAGE_PREFIX}_8.1
+  script:
+    - ./license_checker.sh '*.php' | tee license_check_output.txt
+    - '[ ! -s license_check_output.txt ]'
+
 # stage: test ----------------------
 
 test:
