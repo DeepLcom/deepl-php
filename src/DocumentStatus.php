@@ -6,6 +6,8 @@
 
 namespace DeepL;
 
+use JsonException;
+
 /**
  * Status of a document translation request.
  */
@@ -36,9 +38,17 @@ class DocumentStatus
      */
     public $errorMessage;
 
+    /**
+     * @throws InvalidContentException
+     */
     public function __construct(string $content)
     {
-        $json = json_decode($content, true);
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+
         $this->status = $json['status'];
         $this->secondsRemaining = $json['seconds_remaining'] ?? null;
         $this->billedCharacters = $json['billed_characters'] ?? null;

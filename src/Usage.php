@@ -6,6 +6,8 @@
 
 namespace DeepL;
 
+use JsonException;
+
 /**
  * Information about the API usage: how much has been translated in this billing period, and the
  * maximum allowable amount.
@@ -57,9 +59,16 @@ class Usage
         return $result;
     }
 
+    /**
+     * @throws InvalidContentException
+     */
     public function __construct(string $content)
     {
-        $json = json_decode($content, true);
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
 
         $this->character = $this->buildUsageDetail('character', $json);
         $this->document = $this->buildUsageDetail('document', $json);
