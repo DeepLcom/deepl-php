@@ -6,6 +6,8 @@
 
 namespace DeepL;
 
+use JsonException;
+
 /**
  * Wrapper for the DeepL API for language translation.
  * Create an instance of Translator to use the DeepL API.
@@ -109,7 +111,12 @@ class Translator
         $this->checkStatusCode($response);
         list(, $content) = $response;
 
-        $decoded = json_decode($content, true);
+        try {
+            $decoded = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+
         $result = [];
         foreach ($decoded['supported_languages'] as $lang) {
             $sourceLang = $lang['source_lang'];
@@ -148,7 +155,12 @@ class Translator
         $this->checkStatusCode($response);
 
         list(, $content) = $response;
-        $decoded = json_decode($content, true);
+        try {
+            $decoded = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+
         $textResults = [];
         foreach ($decoded['translations'] as $textResult) {
             $textField = $textResult['text'];
@@ -232,8 +244,12 @@ class Translator
         $this->checkStatusCode($response);
 
         list(, $content) = $response;
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
 
-        $json = json_decode($content, true);
         $documentId = $json['document_id'];
         $documentKey = $json['document_key'];
         return new DocumentHandle($documentId, $documentKey);
@@ -463,7 +479,12 @@ class Translator
         $this->checkStatusCode($response);
         list(, $content) = $response;
 
-        $decoded = json_decode($content, true);
+        try {
+            $decoded = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+
         $result = [];
         foreach ($decoded as $lang) {
             $name = $lang['name'];
@@ -638,7 +659,7 @@ class Translator
 
         $message = '';
         try {
-            $json = json_decode($content, true);
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
             if (isset($json['message'])) {
                 $message .= ", message: {$json['message']}";
             }

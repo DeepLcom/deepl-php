@@ -7,6 +7,7 @@
 namespace DeepL;
 
 use DateTime;
+use JsonException;
 
 /**
  * Information about a glossary, excluding the entry list.
@@ -52,15 +53,31 @@ class GlossaryInfo
         $this->entryCount = $entryCount;
     }
 
+    /**
+     * @throws InvalidContentException
+     */
     public static function parse(string $content): GlossaryInfo
     {
-        $object = json_decode($content, true);
+        try {
+            $object = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+
         return self::parseJsonObject($object);
     }
 
+    /**
+     * @throws InvalidContentException
+     */
     public static function parseList(string $content): array
     {
-        $decoded = json_decode($content, true);
+        try {
+            $decoded = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+
         $result = [];
         foreach ($decoded['glossaries'] as $object) {
             $result[] = self::parseJsonObject($object);
