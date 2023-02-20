@@ -22,6 +22,12 @@ cache:
     - vendor/
     - /.composer
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_TAG
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
 stages:
   - build
   - check
@@ -49,22 +55,44 @@ build image:
 
 # stage: check ----------------------
 
-code sniffer:
+.code_sniffer_base:
   stage: check
   image: ${DOCKER_IMAGE_PREFIX}_8.1
   script:
     - vendor/bin/phpcs
 
-licenseCheck:
+code_sniffer_scheduled:
+  extends: .code_sniffer_base
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  retry: 2
+
+code_sniffer_manual:
+  extends: .code_sniffer_base
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
+
+.license_check_base:
   stage: check
   image: ${DOCKER_IMAGE_PREFIX}_8.1
   script:
     - ./license_checker.sh '*.php' | tee license_check_output.txt
     - '[ ! -s license_check_output.txt ]'
 
+license_check_scheduled:
+  extends: .license_check_base
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  retry: 2
+
+license_check_manual:
+  extends: .license_check_base
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
+
 # stage: test ----------------------
 
-test:
+.test_base:
   stage: test
   extends: .test
   retry: 1
@@ -98,3 +126,14 @@ test:
       junit:
         - reports/junit.xml
     when: always
+
+test_scheduled:
+  extends: .test_base
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  retry: 2
+
+test_manual:
+  extends: .test_base
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
