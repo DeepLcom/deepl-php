@@ -1,7 +1,8 @@
 ARG PHP_VERSION
-FROM php:${PHP_VERSION}
-RUN apt-get update -yqq
-RUN apt-get install git -yqq
+ARG CI_CONTAINER_REPO
+FROM ${CI_CONTAINER_REPO}/php:${PHP_VERSION}
+RUN apk update && apk upgrade --no-cache
+RUN apk add git -q
 
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 RUN php composer-setup.php --install-dir /

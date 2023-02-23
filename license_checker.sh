@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # Usage: ./license_checker.sh source_code_pattern
 # Example: ./license_checker.sh '*.py'

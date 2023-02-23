@@ -45,19 +45,19 @@ build image:
   variables:
     DOCKER_IMAGE: ${DOCKER_IMAGE_PREFIX}_${PHP_VERSION}
     BUILDKIT_IMAGE: $DOCKER_IMAGE:latest
-    BUILDKIT_EXTRA_ARGS: "--opt build-arg:PHP_VERSION=${PHP_VERSION}"
+    BUILDKIT_EXTRA_ARGS: "--opt build-arg:PHP_VERSION=${PHP_VERSION} --opt build-arg:CI_CONTAINER_REPO=${CI_REGISTRY_IMAGE}"
   parallel:
     matrix:
-      - PHP_VERSION: "8.1"
-      - PHP_VERSION: "8.0"
-      - PHP_VERSION: "7.4"
-      - PHP_VERSION: "7.3"
+      - PHP_VERSION: "8.1-alpine"
+      - PHP_VERSION: "8.0-alpine"
+      - PHP_VERSION: "7.4-alpine"
+      - PHP_VERSION: "7.3-alpine"
 
 # stage: check ----------------------
 
 .code_sniffer_base:
   stage: check
-  image: ${DOCKER_IMAGE_PREFIX}_8.1
+  image: ${DOCKER_IMAGE_PREFIX}_8.1-alpine
   script:
     - vendor/bin/phpcs
 
@@ -74,7 +74,7 @@ code_sniffer_manual:
 
 .license_check_base:
   stage: check
-  image: ${DOCKER_IMAGE_PREFIX}_8.1
+  image: ${DOCKER_IMAGE_PREFIX}_8.1-alpine
   script:
     - ./license_checker.sh '*.php' | tee license_check_output.txt
     - '[ ! -s license_check_output.txt ]'
@@ -98,14 +98,14 @@ license_check_manual:
   retry: 1
   parallel:
     matrix:
-      - PHP_VERSION: "8.1"
-      - PHP_VERSION: "8.1"
+      - PHP_VERSION: "8.1-alpine"
+      - PHP_VERSION: "8.1-alpine"
         USE_MOCK_SERVER: "use mock server"
-      - PHP_VERSION: "8.0"
+      - PHP_VERSION: "8.0-alpine"
         USE_MOCK_SERVER: "use mock server"
-      - PHP_VERSION: "7.4"
+      - PHP_VERSION: "7.4-alpine"
         USE_MOCK_SERVER: "use mock server"
-      - PHP_VERSION: "7.3"
+      - PHP_VERSION: "7.3-alpine"
         USE_MOCK_SERVER: "use mock server"
   image: ${DOCKER_IMAGE_PREFIX}_${PHP_VERSION}
   script:
