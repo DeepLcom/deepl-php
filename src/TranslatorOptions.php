@@ -30,6 +30,19 @@ class TranslatorOptions
      * Connection timeout used for each HTTP request retry, as a float in seconds.
      * @see DEFAULT_TIMEOUT
      */
+    public const CONNECT_TIMEOUT = 'connect_timeout';
+
+    /**
+     * Curl execution timeout used for each HTTP request retry, as a float in seconds.
+     * @see DEFAULT_TIMEOUT
+     */
+    public const EXEC_TIMEOUT = 'exec_timeout';
+
+    /**
+     * Timeout used for each HTTP request retry (both connection and execution), as a float in seconds.
+     * @deprecated in favor of self::CONNECT_TIMEOUT and self::EXEC_TIMEOUT
+     * @see DEFAULT_TIMEOUT
+     */
     public const TIMEOUT = 'timeout';
 
     /**

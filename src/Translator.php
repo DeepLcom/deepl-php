@@ -54,7 +54,12 @@ class Translator
             $options[TranslatorOptions::HEADERS] ?? []
         );
 
-        $timeout = $options[TranslatorOptions::TIMEOUT] ?? TranslatorOptions::DEFAULT_TIMEOUT;
+        $connectTimeout = $options[TranslatorOptions::CONNECT_TIMEOUT]
+            ?? $options[TranslatorOptions::TIMEOUT]
+            ?? TranslatorOptions::DEFAULT_TIMEOUT;
+        $execTimeout = $options[TranslatorOptions::EXEC_TIMEOUT]
+            ?? $options[TranslatorOptions::TIMEOUT]
+            ?? TranslatorOptions::DEFAULT_TIMEOUT;
 
         $maxRetries = $options[TranslatorOptions::MAX_RETRIES] ?? TranslatorOptions::DEFAULT_MAX_RETRIES;
 
@@ -62,7 +67,7 @@ class Translator
 
         $proxy = $options[TranslatorOptions::PROXY] ?? null;
 
-        $this->client = new HttpClient($serverUrl, $headers, $timeout, $maxRetries, $logger, $proxy);
+        $this->client = new HttpClient($serverUrl, $headers, $connectTimeout, $execTimeout, $maxRetries, $logger, $proxy);
     }
 
     /**

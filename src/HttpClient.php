@@ -17,7 +17,8 @@ class HttpClient
     private $serverUrl;
     private $headers;
     private $maxRetries;
-    private $minTimeout;
+    private $minConnectTimeout;
+    private $minExecTimeout;
     private $logger;
     private $proxy;
 
@@ -34,14 +35,16 @@ class HttpClient
     public function __construct(
         string           $serverUrl,
         array            $headers,
-        float            $timeout,
+        float            $connectTimeout,
+        float            $execTimeout,
         int              $maxRetries,
         ?LoggerInterface $logger,
         ?string $proxy
     ) {
         $this->serverUrl = $serverUrl;
         $this->maxRetries = $maxRetries;
-        $this->minTimeout = $timeout;
+        $this->minConnectTimeout = $connectTimeout;
+        $this->minExecTimeout = $execTimeout;
         $this->headers = $headers;
         $this->logger = $logger;
         $this->proxy = $proxy;
@@ -77,11 +80,21 @@ class HttpClient
         $exception = null;
         while ($backoff->getNumRetries() <= $this->maxRetries) {
             $outFile = isset($options[self::OPTION_OUTFILE]) ? fopen($options[self::OPTION_OUTFILE], 'w') : null;
-            $timeout = max($this->minTimeout, $backoff->getTimeUntilDeadline());
+            $execTimeout = max($this->minExecTimeout, $backoff->getTimeUntilDeadline());
+            $connectTimeout = max($this->minConnectTimeout, $backoff->getTimeUntilDeadline());
             $response = null;
             $exception = null;
             try {
-                $response = $this->sendRequest($method, $url, $timeout, $headers, $params, $file, $outFile);
+                $response = $this->sendRequest(
+                    $method,
+                    $url,
+                    $connectTimeout,
+                    $execTimeout,
+                    $headers,
+                    $params,
+                    $file,
+                    $outFile
+                );
             } catch (ConnectionException $e) {
                 $exception = $e;
             }
@@ -116,6 +129,7 @@ class HttpClient
     /**
      * @param string $method HTTP method to use.
      * @param string $url Absolute URL to query.
+     * @param float $connectTimeout Time to wait before triggering connect timeout, in seconds.
      * @param float $timeout Time to wait before triggering timeout, in seconds.
      * @param array $headers Array of headers to include in request.
      * @param array $params Array of parameters to include in body.
@@ -127,7 +141,8 @@ class HttpClient
     private function sendRequest(
         string $method,
         string $url,
-        float $timeout,
+        float $connectTimeout,
+        float $execTimeout,
         array $headers,
         array $params,
         ?string $filePath,
@@ -149,8 +164,8 @@ class HttpClient
         }
 
         $curlOptions[\CURLOPT_URL] = $url;
-        $curlOptions[\CURLOPT_CONNECTTIMEOUT] = $timeout;
-        $curlOptions[\CURLOPT_TIMEOUT_MS] = $timeout * 1000;
+        $curlOptions[\CURLOPT_CONNECTTIMEOUT] = $connectTimeout;
+        $curlOptions[\CURLOPT_TIMEOUT_MS] = $execTimeout * 1000;
 
         if ($this->proxy !== null) {
             $curlOptions[\CURLOPT_PROXY] = $this->proxy;

@@ -396,7 +396,7 @@ The `Translator` constructor accepts configuration options as a second argument,
 for example:
 
 ```php
-$options = [ 'max_retries' => 5, 'timeout' => 10.0 ];
+$options = [ 'max_retries' => 5, 'connect_timeout' => 10.0 ];
 $translator = new \DeepL\Translator('YOUR_AUTH_KEY', $options);
 ```
 
@@ -405,7 +405,9 @@ Provide the options as an associative array with the following keys:
 - `max_retries`: the maximum number of failed HTTP requests to retry, per
     function call. By default, 5 retries are made. See
     [Request retries](#request-retries).
-- `timeout`: the number of seconds used as connection timeout for each
+- `connect_timeout`: the number of seconds used as connection timeout for each
+    HTTP request retry. The default value is `10.0` (10 seconds).
+- `exec_timeout`: the number of seconds used as curl execution timeout for each
     HTTP request retry. The default value is `10.0` (10 seconds).
 - `server_url`: `string` containing the URL of the DeepL API, can be overridden
     for example for testing purposes. By default, the URL is selected based on
