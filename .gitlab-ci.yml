@@ -39,7 +39,6 @@ build image:
   variables:
     DOCKER_IMAGE: ${DOCKER_IMAGE_PREFIX}_${PHP_VERSION}
     BUILDKIT_IMAGE: $DOCKER_IMAGE:latest
-    BUILDKIT_CACHE_IMAGE: $DOCKER_IMAGE:latest
     BUILDKIT_EXTRA_ARGS: "--opt build-arg:PHP_VERSION=${PHP_VERSION}"
   parallel:
     matrix:
