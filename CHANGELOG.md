@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Added
 * Script to check our source code for license headers and a step for them in the CI.
+### Fixed
+* Fix getUsage request to be a HTTP GET request, not POST.
 
 ## [1.3.0] - 2023-01-26
 ### Added

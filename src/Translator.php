@@ -74,7 +74,7 @@ class Translator
      */
     public function getUsage(): Usage
     {
-        $response = $this->client->sendRequestWithBackoff('POST', '/v2/usage');
+        $response = $this->client->sendRequestWithBackoff('GET', '/v2/usage');
         $this->checkStatusCode($response);
         list(, $content) = $response;
         return new Usage($content);
