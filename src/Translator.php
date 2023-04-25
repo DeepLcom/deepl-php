@@ -314,9 +314,8 @@ class Translator
     {
         $status = $this->getDocumentStatus($handle);
         while (!$status->done() && $status->ok()) {
-            // Wait for half of remaining time, limited between 1 and 60 seconds
-            $secs = ($status->secondsRemaining || 0) / 2.0 + 1.0;
-            $secs = max(1.0, min($secs, 60.0));
+            // secondsRemaining is currently unreliable, so just poll equidistantly
+            $secs = 5.0;
             usleep($secs * 1000000);
             $this->client->logInfo("Rechecking document translation status after sleeping for $secs seconds.");
             $status = $this->getDocumentStatus($handle);
