@@ -37,6 +37,8 @@ class Translator
         if ($authKey === '') {
             throw new DeepLException('authKey must be a non-empty string');
         }
+        // Validation is currently only logging warnings
+        $_ = TranslatorOptions::isValid($options);
 
         $serverUrl = $options[TranslatorOptions::SERVER_URL] ??
             (self::isAuthKeyFreeAccount($authKey) ? TranslatorOptions::DEFAULT_SERVER_URL_FREE
@@ -67,7 +69,17 @@ class Translator
 
         $proxy = $options[TranslatorOptions::PROXY] ?? null;
 
-        $this->client = new HttpClient($serverUrl, $headers, $timeout, $maxRetries, $logger, $proxy);
+        $http_client = $options[TranslatorOptions::HTTP_CLIENT] ?? null;
+
+        $this->client = new HttpClientWrapper(
+            $serverUrl,
+            $headers,
+            $timeout,
+            $maxRetries,
+            $logger,
+            $proxy,
+            $http_client
+        );
     }
 
     /**
@@ -153,7 +165,7 @@ class Translator
         $response = $this->client->sendRequestWithBackoff(
             'POST',
             '/v2/translate',
-            [HttpClient::OPTION_PARAMS => $params]
+            [HttpClientWrapper::OPTION_PARAMS => $params]
         );
         $this->checkStatusCode($response);
 
@@ -240,8 +252,8 @@ class Translator
             'POST',
             '/v2/document',
             [
-                HttpClient::OPTION_PARAMS => $params,
-                HttpClient::OPTION_FILE => $inputFile,
+                HttpClientWrapper::OPTION_PARAMS => $params,
+                HttpClientWrapper::OPTION_FILE => $inputFile,
             ]
         );
         $this->checkStatusCode($response);
@@ -269,7 +281,7 @@ class Translator
         $response = $this->client->sendRequestWithBackoff(
             'POST',
             "/v2/document/$handle->documentId",
-            [HttpClient::OPTION_PARAMS => ['document_key' => $handle->documentKey]]
+            [HttpClientWrapper::OPTION_PARAMS => ['document_key' => $handle->documentKey]]
         );
         $this->checkStatusCode($response);
         list(, $content) = $response;
@@ -292,8 +304,8 @@ class Translator
                 'POST',
                 "/v2/document/$handle->documentId/result",
                 [
-                    HttpClient::OPTION_PARAMS => ['document_key' => $handle->documentKey],
-                    HttpClient::OPTION_OUTFILE => $outputFile,
+                    HttpClientWrapper::OPTION_PARAMS => ['document_key' => $handle->documentKey],
+                    HttpClientWrapper::OPTION_OUTFILE => $outputFile,
                 ]
             );
             $this->checkStatusCode($response, true);
@@ -363,7 +375,7 @@ class Translator
         $response = $this->client->sendRequestWithBackoff(
             'POST',
             '/v2/glossaries',
-            [HttpClient::OPTION_PARAMS => $params]
+            [HttpClientWrapper::OPTION_PARAMS => $params]
         );
         $this->checkStatusCode($response, false, true);
         list(, $content) = $response;
@@ -404,7 +416,7 @@ class Translator
         $response = $this->client->sendRequestWithBackoff(
             'POST',
             '/v2/glossaries',
-            [HttpClient::OPTION_PARAMS => $params]
+            [HttpClientWrapper::OPTION_PARAMS => $params]
         );
         $this->checkStatusCode($response, false, true);
         list(, $content) = $response;
@@ -476,7 +488,7 @@ class Translator
         $response = $this->client->sendRequestWithBackoff(
             'GET',
             '/v2/languages',
-            [HttpClient::OPTION_PARAMS => ['type' => $target ? 'target' : null]]
+            [HttpClientWrapper::OPTION_PARAMS => ['type' => $target ? 'target' : 'source']]
         );
         $this->checkStatusCode($response);
         list(, $content) = $response;
