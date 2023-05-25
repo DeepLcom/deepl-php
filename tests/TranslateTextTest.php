@@ -6,11 +6,16 @@
 
 namespace DeepL;
 
+use \Psr\Http\Client\ClientInterface;
+
 class TranslateTextTest extends DeepLTestBase
 {
-    public function testExampleText()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testExampleText(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         foreach (DeepLTestBase::EXAMPLE_TEXT as $langCode => $exampleText) {
             $sourceLang = \DeepL\LanguageCode::removeRegionalVariant($langCode);
             $result = $translator->translateText($exampleText, $sourceLang, 'en-US');
@@ -18,9 +23,12 @@ class TranslateTextTest extends DeepLTestBase
         }
     }
 
-    public function testMultipleText()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testMultipleText(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $input = [DeepLTestBase::EXAMPLE_TEXT['fr'], DeepLTestBase::EXAMPLE_TEXT['en']];
         $result = $translator->translateText($input, null, 'de');
         $this->assertEquals(DeepLTestBase::EXAMPLE_TEXT['de'], $result[0]->text);
@@ -29,9 +37,12 @@ class TranslateTextTest extends DeepLTestBase
         $this->assertEquals('en', $result[1]->detectedSourceLang);
     }
 
-    public function testLangCodeMixedCase()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testLangCodeMixedCase(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $result = $translator->translateText(DeepLTestBase::EXAMPLE_TEXT['en'], 'en', 'de');
         $this->assertEquals(DeepLTestBase::EXAMPLE_TEXT['de'], $result->text);
         $this->assertEquals('en', $result->detectedSourceLang);
@@ -56,16 +67,22 @@ class TranslateTextTest extends DeepLTestBase
         $translator->translateText(DeepLTestBase::EXAMPLE_TEXT['de'], null, $targetLang);
     }
 
-    public function testInvalidSourceLanguage()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testInvalidSourceLanguage(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $this->expectExceptionMessage('source_lang');
         $translator->translateText(DeepLTestBase::EXAMPLE_TEXT['de'], 'xx', 'en-US');
     }
 
-    public function testInvalidTargetLanguage()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testInvalidTargetLanguage(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $this->expectExceptionMessage('target_lang');
         $translator->translateText(DeepLTestBase::EXAMPLE_TEXT['de'], null, 'xx');
     }
@@ -87,11 +104,14 @@ class TranslateTextTest extends DeepLTestBase
         $translator->translateText($texts, null, 'de');
     }
 
-    public function testTranslateWithRetries()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTranslateWithRetries(?ClientInterface $httpClient)
     {
         $this->needsMockServer();
         $this->session429Count = 2;
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
 
         $timeBefore = microtime(true);
         $translator->translateText(DeepLTestBase::EXAMPLE_TEXT['en'], null, 'de');
@@ -100,10 +120,13 @@ class TranslateTextTest extends DeepLTestBase
         $this->assertGreaterThan(1.0, $timeAfter - $timeBefore);
     }
 
-    public function testFormality()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testFormality(?ClientInterface $httpClient)
     {
         $this->needsRealServer();
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $input = 'How are you?';
         $formal = 'Wie geht es Ihnen?';
         $informal = 'Wie geht es dir?';
@@ -157,17 +180,23 @@ class TranslateTextTest extends DeepLTestBase
         )->text);
     }
 
-    public function testInvalidFormality()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testInvalidFormality(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $input = 'How are you?';
         $this->expectExceptionMessage('formality');
         $translator->translateText($input, null, 'de', [TranslateTextOptions::FORMALITY => 'invalid']);
     }
 
-    public function testPreserveFormatting()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testPreserveFormatting(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $input = DeepLTestBase::EXAMPLE_TEXT['en'];
         $translator->translateText($input, null, 'de', [TranslateTextOptions::PRESERVE_FORMATTING => false]);
         $translator->translateText($input, null, 'de', [TranslateTextOptions::PRESERVE_FORMATTING => true]);
@@ -175,9 +204,12 @@ class TranslateTextTest extends DeepLTestBase
         $this->assertTrue(true);
     }
 
-    public function testSplitSentences()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testSplitSentences(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $input = "The firm said it had been\nconducting an internal investigation.";
         $translator->translateText($input, null, 'de', [TranslateTextOptions::SPLIT_SENTENCES => 'off']);
         $translator->translateText($input, null, 'de', [TranslateTextOptions::SPLIT_SENTENCES => 'on']);
@@ -189,9 +221,12 @@ class TranslateTextTest extends DeepLTestBase
         $translator->translateText($input, null, 'de', [TranslateTextOptions::SPLIT_SENTENCES => 'invalid']);
     }
 
-    public function testTagHandlingBasic()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTagHandlingBasic(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $input = "<!DOCTYPE html>\n<html>\n<body>\n<p>This is an example sentence.</p>\n</body>\n</html>";
         // Note: this test may use the mock server that will not translate the text,
         // therefore we do not check the translated result.
@@ -201,10 +236,13 @@ class TranslateTextTest extends DeepLTestBase
         $this->assertTrue(true);
     }
 
-    public function testTagHandlingXML()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTagHandlingXML(?ClientInterface $httpClient)
     {
         $this->needsRealServer();
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
 
         $text = "
             <document>
@@ -238,10 +276,13 @@ class TranslateTextTest extends DeepLTestBase
         $this->assertMatchesRegularExpression('#<title>.*Der Titel.*</title>#', $result->text);
     }
 
-    public function testTagHandlingHTML()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTagHandlingHTML(?ClientInterface $httpClient)
     {
         $this->needsRealServer();
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
 
         $text = '
             <!DOCTYPE html>

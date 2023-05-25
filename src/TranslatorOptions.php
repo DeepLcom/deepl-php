@@ -113,7 +113,7 @@ class TranslatorOptions
         $maybe_logger = $options[TranslatorOptions::LOGGER] ?? null;
         if (isset($options[TranslatorOptions::HTTP_CLIENT])) {
             foreach (TranslatorOptions::IGNORED_OPTIONS_WITH_CUSTOM_HTTP_CLIENT as $ignored_option) {
-                $is_valid &= !TranslatorOptions::isIgnoredOptionSet($ignored_option, $options, $maybe_logger);
+                $is_valid &= !TranslatorOptions::isIgnoredHttpOptionSet($ignored_option, $options, $maybe_logger);
             }
         }
         foreach ($options as $option_key => $option_value) {
@@ -127,8 +127,11 @@ class TranslatorOptions
         return $is_valid;
     }
 
-    private static function isIgnoredOptionSet(string $keyToCheck, array $options, ?LoggerInterface $maybe_logger): bool
-    {
+    private static function isIgnoredHttpOptionSet(
+        string $keyToCheck,
+        array $options,
+        ?LoggerInterface $maybe_logger
+    ): bool {
         if (array_key_exists($keyToCheck, $options)) {
             if ($maybe_logger !== null) {
                 $maybe_logger->warning("Option $keyToCheck is ignored as a custom HTTP client is used.");
