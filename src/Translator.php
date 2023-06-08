@@ -578,16 +578,16 @@ class Translator
     {
         if (is_array($texts)) {
             foreach ($texts as $text) {
-                if (!is_string($text) || strlen($text) === 0) {
+                if (!is_string($text)) {
                     throw new DeepLException(
-                        'texts parameter must be a non-empty string or array of non-empty strings',
+                        'texts parameter must be a string or array of strings',
                     );
                 }
             }
         } else {
-            if (!is_string($texts) || strlen($texts) === 0) {
+            if (!is_string($texts)) {
                 throw new DeepLException(
-                    'texts parameter must be a non-empty string or array of non-empty strings',
+                    'texts parameter must be a string or array of strings',
                 );
             }
         }
