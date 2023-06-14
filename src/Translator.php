@@ -730,13 +730,19 @@ class Translator
     {
         $libraryVersion = self::VERSION;
         $libraryInfoStr = "deepl-php/$libraryVersion";
-        if ($sendPlatformInfo) {
-            $platformStr = php_uname('s r v m');
-            $phpVersion = phpversion();
-            $libraryInfoStr .= " ($platformStr) php/$phpVersion";
-        }
-        if (!is_null($appInfo)) {
-            $libraryInfoStr .= " $appInfo->appName/$appInfo->appVersion";
+        try {
+            if ($sendPlatformInfo) {
+                $platformStr = php_uname('s r v m');
+                $phpVersion = phpversion();
+                $libraryInfoStr .= " ($platformStr) php/$phpVersion";
+                $curlVer = curl_version()['version'];
+                $libraryInfoStr .= " curl/$curlVer";
+            }
+            if (!is_null($appInfo)) {
+                $libraryInfoStr .= " $appInfo->appName/$appInfo->appVersion";
+            }
+        } catch (\Exception $e) {
+            // Do not fail request, simply send req with an incomplete user agent string
         }
         return $libraryInfoStr;
     }

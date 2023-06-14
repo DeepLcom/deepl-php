@@ -14,17 +14,20 @@ class UserAgentTestDefault extends DeepLTestBase
     private $curlExecMock;
     private $curlGetInfoMock;
     private $curlOptionsMock;
+    private $curlVersionMock;
         
 
     protected function setUp(): void
     {
-        $this->curlExecMock = $this->getFunctionMock(__NAMESPACE__, "curl_exec");
-        $this->curlGetInfoMock = $this->getFunctionMock(__NAMESPACE__, "curl_getinfo");
+        $this->curlExecMock = $this->getFunctionMock(__NAMESPACE__, 'curl_exec');
+        $this->curlGetInfoMock = $this->getFunctionMock(__NAMESPACE__, 'curl_getinfo');
         $this->curlGetInfoMock->expects($this->once())->willReturn(200);
         $this->curlExecMock->expects($this->once())->willReturn(
             '{"character_count": 180118,"character_limit": 1250000}'
         );
-        $this->curlOptionsMock = $this->getFunctionMock(__NAMESPACE__, "curl_setopt_array");
+        $this->curlOptionsMock = $this->getFunctionMock(__NAMESPACE__, 'curl_setopt_array');
+        $this->curlVersionMock = $this->getFunctionMock(__NAMESPACE__, 'curl_version');
+        $this->curlVersionMock->expects($this->any())->willReturn(\curl_version());
     }
 
     protected function tearDown(): void
@@ -32,6 +35,7 @@ class UserAgentTestDefault extends DeepLTestBase
         $this->curlExecMock = null;
         $this->curlGetInfoMock = null;
         $this->curlOptionsMock = null;
+        $this->curlVersionMock = null;
     }
 
     public function testDefaultUserAgentHeader()
@@ -142,6 +146,53 @@ class UserAgentTestDefault extends DeepLTestBase
         $translator->getUsage();
     }
     
+    public function testCurlVersionInDefaultHeader()
+    {
+        $this->curlOptionsMock->expects($this->once())->willReturnCallback(function ($handle, $curlOptions) {
+            $userAgentHeader = $this->getUserAgentHeaderFromCurlOptions($curlOptions);
+            $this->assertStringContainsString('deepl-php/', $userAgentHeader);
+            $this->assertStringContainsString('(', $userAgentHeader);
+            $this->assertStringContainsString(' php/', $userAgentHeader);
+            $this->assertStringNotContainsString('my-custom-php-chat-client/1.2.3', $userAgentHeader);
+            $this->assertStringContainsString(' curl/', $userAgentHeader);
+            $return_var = 1;
+        });
+        $translator = $this->makeTranslator([]);
+        $translator->getUsage();
+    }
+
+
+    public function testCurlVersionNotInOptOutHeader()
+    {
+        $this->curlOptionsMock->expects($this->once())->willReturnCallback(function ($handle, $curlOptions) {
+            $userAgentHeader = $this->getUserAgentHeaderFromCurlOptions($curlOptions);
+            $this->assertStringContainsString('deepl-php/', $userAgentHeader);
+            $this->assertStringNotContainsString('(', $userAgentHeader);
+            $this->assertStringNotContainsString(' php/', $userAgentHeader);
+            $this->assertStringNotContainsString('my-custom-php-chat-client/1.2.3', $userAgentHeader);
+            $this->assertStringNotContainsString(' curl/', $userAgentHeader);
+            $return_var = 1;
+        });
+        $translator = $this->makeTranslator(['send_platform_info' => false]);
+        $translator->getUsage();
+    }
+
+    public function testCurlVersionFails()
+    {
+        $this->curlVersionMock->expects($this->once())->willThrowException(new \Exception('Testing exception'));
+        $this->curlOptionsMock->expects($this->once())->willReturnCallback(function ($handle, $curlOptions) {
+            $userAgentHeader = $this->getUserAgentHeaderFromCurlOptions($curlOptions);
+            $this->assertStringContainsString('deepl-php/', $userAgentHeader);
+            $this->assertStringContainsString('(', $userAgentHeader);
+            $this->assertStringContainsString(' php/', $userAgentHeader);
+            $this->assertStringNotContainsString('my-custom-php-chat-client/1.2.3', $userAgentHeader);
+            $this->assertStringNotContainsString(' curl/', $userAgentHeader);
+            $return_var = 1;
+        });
+        $translator = $this->makeTranslator([]);
+        $translator->getUsage();
+    }
+
 
     private function getUserAgentHeaderFromCurlOptions($curlOptions): string
     {
