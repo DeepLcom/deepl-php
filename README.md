@@ -470,6 +470,21 @@ $headers = [
 $translator = new \DeepL\Translator('YOUR_AUTH_KEY', ['headers' => $headers]);
 ```
 
+### Custom HTTP client
+
+If you want to set specific HTTP options that we don't expose (or otherwise want more control over the API calls by the library), you can configure the library to use a PSR-18 compliant HTTP client of your choosing.
+For example, in order to use a connect timeout of 5.2 seconds and read timeout of 7.4 seconds while using a proxy with [Guzzle](https://github.com/guzzle/guzzle):
+
+```php
+$client = new \GuzzleHttp\Client([
+    'connect_timeout' => 5.2,
+    'read_timeout' => 7.4,
+    'proxy' => 'http://localhost:8125'
+]);
+$translator = new \DeepL\Translator('YOUR_AUTH_KEY', [TranslatorOptions::HTTP_CLIENT => $client]);
+$translator->getUsage(); // Or a translate call, etc
+```
+
 ### Request retries
 
 Requests to the DeepL API that fail due to transient conditions (for example,

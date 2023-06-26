@@ -6,13 +6,21 @@
 
 namespace DeepL;
 
+use Http\Discovery\Psr17FactoryDiscovery;
+use Http\Discovery\Psr18Client;
+use Http\Message\MultipartStream\MultipartStreamBuilder;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\RequestExceptionInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Http\Client\ClientInterface;
 
 /**
  * Internal class implementing HTTP requests.
  * @private
  */
-class HttpClient
+class HttpClientWrapper
 {
     private $serverUrl;
     private $headers;
@@ -20,9 +28,17 @@ class HttpClient
     private $minTimeout;
     private $logger;
     private $proxy;
+    private $customHttpClient;
+    private $requestFactory;
+    /**
+     * PSR-18 client that is only used to construct the HTTP request, not to send it.
+     */
+    private $streamClient;
+    private $streamFactory;
 
     /**
-     * @var resource cURL handle.
+     * @var resource cURL handle, or null if using a custom HTTP client.
+     * @see HttpClientWrapper::__construct
      */
     private $curlHandle;
 
@@ -37,7 +53,8 @@ class HttpClient
         float            $timeout,
         int              $maxRetries,
         ?LoggerInterface $logger,
-        ?string $proxy
+        ?string          $proxy,
+        ?ClientInterface $customHttpClient = null
     ) {
         $this->serverUrl = $serverUrl;
         $this->maxRetries = $maxRetries;
@@ -45,12 +62,18 @@ class HttpClient
         $this->headers = $headers;
         $this->logger = $logger;
         $this->proxy = $proxy;
-        $this->curlHandle = \curl_init();
+        $this->customHttpClient = $customHttpClient;
+        $this->requestFactory = Psr17FactoryDiscovery::findRequestFactory();
+        $this->streamClient = new Psr18Client();
+        $this->streamFactory = Psr17FactoryDiscovery::findStreamFactory();
+        $this->curlHandle = $customHttpClient === null ? \curl_init() : null;
     }
 
     public function __destruct()
     {
-        \curl_close($this->curlHandle);
+        if ($this->customHttpClient === null) {
+            \curl_close($this->curlHandle);
+        }
     }
 
     /**
@@ -114,6 +137,9 @@ class HttpClient
     }
 
     /**
+     * Sends a HTTP request. Note that in the case of a custom HTTP client, some of these options are
+     * ignored in favor of whatever is set in the client (e.g. timeouts and proxy). If we fall back to cURL,
+     * those options are respected.
      * @param string $method HTTP method to use.
      * @param string $url Absolute URL to query.
      * @param float $timeout Time to wait before triggering timeout, in seconds.
@@ -125,6 +151,104 @@ class HttpClient
      * @throws ConnectionException
      */
     private function sendRequest(
+        string $method,
+        string $url,
+        float $timeout,
+        array $headers,
+        array $params,
+        ?string $filePath,
+        $outFile
+    ): array {
+        if ($this->customHttpClient !== null) {
+            return $this->sendCustomHttpRequest($method, $url, $headers, $params, $filePath, $outFile);
+        } else {
+            return $this->sendCurlRequest($method, $url, $timeout, $headers, $params, $filePath, $outFile);
+        }
+    }
+
+    /**
+     * Creates a PSR-7 compliant HTTP request with the given arguments.
+     * @param string $method HTTP method to use
+     * @param string $uri The URI for the request
+     * @param array $headers Array of headers for the request
+     * @param StreamInterface $body body to be used for the request.
+     * @return RequestInterface HTTP request object
+     */
+    private function createHttpRequest(string $method, string $url, array $headers, StreamInterface $body)
+    {
+        $request = $this->requestFactory->createRequest($method, $url);
+        foreach ($headers as $header_key => $header_val) {
+            $request = $request->withHeader($header_key, $header_val);
+        }
+        $request = $request->withBody($body);
+        return $request;
+    }
+
+    /**
+     * Sends a HTTP request using the custom HTTP client.
+     * @param string $method HTTP method to use.
+     * @param string $url Absolute URL to query.
+     * @param array $headers Array of headers to include in request.
+     * @param array $params Array of parameters to include in body.
+     * @param string|null $filePath If not null, path to file to upload with request.
+     * @param resource|null $outFile If not null, file to write output to.
+     * @return array Array where the first element is the HTTP status code and the second element is the response body.
+     * @throws ConnectionException
+     */
+    private function sendCustomHttpRequest(
+        string $method,
+        string $url,
+        array $headers,
+        array $params,
+        ?string $filePath,
+        $outFile
+    ): array {
+        $body = null;
+        if ($filePath !== null) {
+            $builder = new MultipartStreamBuilder($this->streamClient);
+            $builder->addResource('file', fopen($filePath, 'r'));
+            foreach ($params as $param_name => $value) {
+                $builder->addResource($param_name, $value);
+            }
+            $body = $builder->build();
+            $boundary = $builder->getBoundary();
+            $headers['Content-Type'] = "multipart/form-data; boundary=\"$boundary\"";
+        } elseif (count($params) > 0) {
+            $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+            $body = $this->streamFactory->createStream(
+                $this->urlEncodeWithRepeatedParams($params)
+            );
+        } else {
+            $body = $this->streamFactory->createStream('');
+        }
+        $request = $this->createHttpRequest($method, $url, $headers, $body);
+        try {
+            $response = $this->customHttpClient->sendRequest($request);
+            $response_data = (string) $response->getBody();
+            if ($outFile) {
+                fwrite($outFile, $response_data);
+            }
+            return [$response->getStatusCode(), $response_data];
+        } catch (RequestExceptionInterface $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), null, false);
+        } catch (ClientExceptionInterface $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), null, true);
+        }
+    }
+
+    /**
+     * Sends a HTTP request using cURL
+     * @param string $method HTTP method to use.
+     * @param string $url Absolute URL to query.
+     * @param float $timeout Time to wait before triggering timeout, in seconds.
+     * @param array $headers Array of headers to include in request.
+     * @param array $params Array of parameters to include in body.
+     * @param string|null $filePath If not null, path to file to upload with request.
+     * @param resource|null $outFile If not null, file to write output to.
+     * @return array Array where the first element is the HTTP status code and the second element is the response body.
+     * @throws ConnectionException
+     */
+    private function sendCurlRequest(
         string $method,
         string $url,
         float $timeout,

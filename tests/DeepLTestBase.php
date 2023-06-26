@@ -7,6 +7,7 @@
 namespace DeepL;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientInterface;
 use Ramsey\Uuid\Uuid;
 
 class DeepLTestBase extends TestCase
@@ -173,13 +174,12 @@ class DeepLTestBase extends TestCase
         return new Translator($this->authKey, $mergedOptions);
     }
 
-    public function makeTranslatorWithRandomAuthKey(): Translator
+    public function makeTranslatorWithRandomAuthKey(array $options = []): Translator
     {
-        $mergedOptions = array_replace(
-            [TranslatorOptions::SERVER_URL => $this->serverUrl,
-                TranslatorOptions::HEADERS => $this->sessionHeaders()],
-            $options ?? []
-        );
+        $mergedOptions = array_replace([
+            TranslatorOptions::SERVER_URL => $this->serverUrl,
+            TranslatorOptions::HEADERS => $this->sessionHeaders(),
+        ], $options ?? []);
         $authKey = Uuid::uuid4();
 
         return new Translator($authKey, $mergedOptions);
@@ -255,5 +255,10 @@ class DeepLTestBase extends TestCase
         self::defineFunctionMock(__NAMESPACE__, 'curl_exec');
         self::defineFunctionMock(__NAMESPACE__, 'curl_getinfo');
         self::defineFunctionMock(__NAMESPACE__, 'curl_setopt_array');
+    }
+
+    public function provideHttpClient()
+    {
+        return [[null], [new \GuzzleHttp\Client()]];
     }
 }

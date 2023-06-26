@@ -6,7 +6,10 @@
 
 namespace DeepL;
 
-class UserAgentTest extends DeepLTestBase
+/**
+ * Tests for the User-Agent header with the default HTTP client.
+ */
+class UserAgentTestDefault extends DeepLTestBase
 {
     private $curlExecMock;
     private $curlGetInfoMock;

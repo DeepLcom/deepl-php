@@ -6,49 +6,84 @@
 
 namespace DeepL;
 
+use Psr\Http\Client\ClientInterface;
+
 class GeneralTest extends DeepLTestBase
 {
-    public function testEmptyAuthKey()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testEmptyAuthKey(?ClientInterface $httpClient)
     {
         $this->expectException(DeepLException::class);
-        new Translator('', [TranslatorOptions::SERVER_URL => $this->serverUrl]);
+        new Translator('', [
+            TranslatorOptions::SERVER_URL => $this->serverUrl,
+            TranslatorOptions::HTTP_CLIENT => $httpClient
+        ]);
     }
 
-    public function testInvalidAuthKey()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testInvalidAuthKey(?ClientInterface $httpClient)
     {
-        $translator = new Translator('invalid', [TranslatorOptions::SERVER_URL => $this->serverUrl]);
+        $translator = new Translator('invalid', [
+            TranslatorOptions::SERVER_URL => $this->serverUrl,
+            TranslatorOptions::HTTP_CLIENT => $httpClient
+        ]);
 
         $this->expectException(AuthorizationException::class);
         $translator->getUsage();
     }
 
-    public function testInvalidServerUrl()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testInvalidServerUrl(?ClientInterface $httpClient)
     {
-        new Translator($this->authKey, [TranslatorOptions::SERVER_URL => null]);
+        new Translator($this->authKey, [
+            TranslatorOptions::SERVER_URL => null,
+            TranslatorOptions::HTTP_CLIENT => $httpClient
+        ]);
 
         $this->expectException(DeepLException::class);
-        new Translator($this->authKey, [TranslatorOptions::SERVER_URL => false]);
+        new Translator($this->authKey, [
+            TranslatorOptions::SERVER_URL => false,
+            TranslatorOptions::HTTP_CLIENT => $httpClient
+        ]);
     }
 
-    public function testUsage()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testUsage(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $usage = $translator->getUsage();
         $this->assertStringContainsString('Usage this billing period', strval($usage));
     }
 
-    public function testLogger()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testLogger(?ClientInterface $httpClient)
     {
         $logger = new TestLogger();
-        $translator = $this->makeTranslator([TranslatorOptions::LOGGER => $logger]);
+        $translator = $this->makeTranslator([
+            TranslatorOptions::LOGGER => $logger,
+            TranslatorOptions::HTTP_CLIENT => $httpClient
+        ]);
         $translator->getUsage();
         $this->assertStringContainsString("Request to DeepL API", $logger->content);
         $this->assertStringContainsString("DeepL API response", $logger->content);
     }
 
-    public function testLanguage()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testLanguage(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $sourceLanguages = $translator->getSourceLanguages();
         foreach ($sourceLanguages as $sourceLanguage) {
             if ($sourceLanguage->code === 'en') {
@@ -67,11 +102,12 @@ class GeneralTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryLanguage()
+    public function testGlossaryLanguage(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryLanguagePairs = $translator->getGlossaryLanguages();
         $this->assertGreaterThan(0, count($glossaryLanguagePairs));
         foreach ($glossaryLanguagePairs as $glossaryLanguagePair) {
@@ -81,9 +117,10 @@ class GeneralTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testProxyUsage()
+    public function testProxyUsage(?ClientInterface $httpClient)
     {
         $this->needsMockProxyServer();
         $this->sessionExpectProxy = true;
@@ -100,23 +137,48 @@ class GeneralTest extends DeepLTestBase
     {
         $this->needsMockServer();
         $this->sessionNoResponse = 2;
-        $translator = $this->makeTranslator([TranslatorOptions::MAX_RETRIES => 0, TranslatorOptions::TIMEOUT => 1.0]);
+        $translator = $this->makeTranslator(
+            [TranslatorOptions::MAX_RETRIES => 0, TranslatorOptions::TIMEOUT => 1.0],
+        );
 
         $this->expectException(ConnectionException::class);
         $translator->getUsage();
     }
 
-    public function testTranslateTooManyRequests()
+    public function testUsageNoResponseCustomClient()
+    {
+        $this->needsMockServer();
+        $this->sessionNoResponse = 2;
+        $translator = $this->makeTranslator([
+            TranslatorOptions::MAX_RETRIES => 0,
+            TranslatorOptions::HTTP_CLIENT => new \GuzzleHttp\Client(['timeout' => 1.0])
+        ]);
+
+        $this->expectException(ConnectionException::class);
+        $translator->getUsage();
+    }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTranslateTooManyRequests(?ClientInterface $httpClient)
     {
         $this->needsMockServer();
         $this->session429Count = 2;
-        $translator = $this->makeTranslator([TranslatorOptions::MAX_RETRIES => 1, TranslatorOptions::TIMEOUT => 1.0]);
+        $translator = $this->makeTranslator([
+            TranslatorOptions::MAX_RETRIES => 1,
+            TranslatorOptions::TIMEOUT => 1.0,
+            TranslatorOptions::HTTP_CLIENT => $httpClient,
+        ]);
 
         $this->expectException(TooManyRequestsException::class);
         $translator->translateText(DeepLTestBase::EXAMPLE_TEXT['en'], null, 'de');
     }
 
-    public function testUsageOverrun()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testUsageOverrun(?ClientInterface $httpClient)
     {
         $this->needsMockServer();
         $characterLimit = 20;
@@ -124,7 +186,7 @@ class GeneralTest extends DeepLTestBase
         $this->sessionInitCharacterLimit = $characterLimit;
         $this->sessionInitDocumentLimit = $documentLimit;
 
-        $translator = $this->makeTranslatorWithRandomAuthKey();
+        $translator = $this->makeTranslatorWithRandomAuthKey([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $usage = $translator->getUsage();
         $this->assertFalse($usage->anyLimitReached());
         $this->assertEquals($characterLimit, $usage->character->limit);
@@ -149,7 +211,10 @@ class GeneralTest extends DeepLTestBase
         $translator->translateDocument($exampleDocument, $outputDocumentPath, null, "de");
     }
 
-    public function testUsageTeamDocumentLimit()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testUsageTeamDocumentLimit(?ClientInterface $httpClient)
     {
         $this->needsMockServer();
         $teamDocumentLimit = 1;
@@ -157,7 +222,7 @@ class GeneralTest extends DeepLTestBase
         $this->sessionInitDocumentLimit = 0;
         $this->sessionInitTeamDocumentLimit = $teamDocumentLimit;
 
-        $translator = $this->makeTranslatorWithRandomAuthKey();
+        $translator = $this->makeTranslatorWithRandomAuthKey([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $usage = $translator->getUsage();
         $this->assertFalse($usage->anyLimitReached());
         $this->assertNull($usage->character);

@@ -6,6 +6,8 @@
 
 namespace DeepL;
 
+use \Psr\Http\Client\ClientInterface;
+
 class GlossaryTest extends DeepLTestBase
 {
     private $testEntries = ['Hello' => 'Hallo'];
@@ -62,11 +64,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryCreate()
+    public function testGlossaryCreate(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         try {
             $entries = GlossaryEntries::fromEntries(['Hello' => 'Hallo']);
@@ -89,11 +92,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryCreateLarge()
+    public function testGlossaryCreateLarge(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         try {
             $entries = [];
@@ -119,11 +123,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryCreateCsv()
+    public function testGlossaryCreateCsv(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         try {
             $expectedEntries = ["sourceEntry1" => "targetEntry1", "source\"Entry" => "target,Entry"];
@@ -141,11 +146,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryCreateInvalid()
+    public function testGlossaryCreateInvalid(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         try {
             $glossaryEntries = GlossaryEntries::fromEntries($this->testEntries);
@@ -161,11 +167,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryGet()
+    public function testGlossaryGet(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         try {
             $glossaryEntries = GlossaryEntries::fromEntries($this->testEntries);
@@ -196,11 +203,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryGetEntries()
+    public function testGlossaryGetEntries(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         try {
             $entries = [
@@ -238,11 +246,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryList()
+    public function testGlossaryList(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         try {
             $glossaryEntries = GlossaryEntries::fromEntries($this->testEntries);
@@ -261,11 +270,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryDelete()
+    public function testGlossaryDelete(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         try {
             $glossaryEntries = GlossaryEntries::fromEntries($this->testEntries);
@@ -292,11 +302,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryTranslateTextSentence()
+    public function testGlossaryTranslateTextSentence(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         try {
             $glossaryEntries = GlossaryEntries::fromEntries(['artist' => 'Maler', 'prize' => 'Gewinn']);
@@ -338,11 +349,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryTranslateTextBasic()
+    public function testGlossaryTranslateTextBasic(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryNameEnDe = $this->getGlossaryName() . "EnDe";
         $glossaryNameDeEn = $this->getGlossaryName() . "DeEn";
         try {
@@ -382,11 +394,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryTranslateDocument()
+    public function testGlossaryTranslateDocument(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryName = $this->getGlossaryName();
         $inputText = "artist\nprize";
 
@@ -426,11 +439,12 @@ class GlossaryTest extends DeepLTestBase
     }
 
     /**
+     * @dataProvider provideHttpClient
      * @throws DeepLException
      */
-    public function testGlossaryTranslateTextInvalid()
+    public function testGlossaryTranslateTextInvalid(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $glossaryNameEnDe = $this->getGlossaryName() . "EnDe";
         $glossaryNameDeEn = $this->getGlossaryName() . "DeEn";
         try {

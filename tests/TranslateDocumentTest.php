@@ -6,11 +6,16 @@
 
 namespace DeepL;
 
+use \Psr\Http\Client\ClientInterface;
+
 class TranslateDocumentTest extends DeepLTestBase
 {
-    public function testTranslateDocument()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTranslateDocument(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         list(, $exampleDocument, , $outputDocumentPath) = $this->tempFiles();
         $status = $translator->translateDocument($exampleDocument, $outputDocumentPath, 'en', 'de');
 
@@ -30,34 +35,43 @@ class TranslateDocumentTest extends DeepLTestBase
         $this->assertEquals(DeepLTestBase::EXAMPLE_DOCUMENT_OUTPUT, $this->readFile($outputDocumentPath));
     }
 
-    public function testTranslateDocumentWithWaiting()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTranslateDocumentWithWaiting(?ClientInterface $httpClient)
     {
         $this->needsMockServer();
         $this->sessionDocQueueTime = 2.0;
         $this->sessionDocTranslateTime = 2.0;
         list(, $exampleDocument, , $outputDocumentPath) = $this->tempFiles();
 
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $translator->translateDocument($exampleDocument, $outputDocumentPath, 'en', 'de');
         $this->assertEquals(DeepLTestBase::EXAMPLE_DOCUMENT_OUTPUT, $this->readFile($outputDocumentPath));
     }
 
-    public function testTranslateLargeDocument()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTranslateLargeDocument(?ClientInterface $httpClient)
     {
         list(, , $exampleLargeDocument, $outputDocumentPath) = $this->tempFiles();
 
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $translator->translateDocument($exampleLargeDocument, $outputDocumentPath, 'en', 'de');
         $this->assertEquals($this->EXAMPLE_LARGE_DOCUMENT_OUTPUT, $this->readFile($outputDocumentPath));
     }
 
-    public function testTranslateDocumentFormality()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTranslateDocumentFormality(?ClientInterface $httpClient)
     {
         $this->needsRealServer();
         list(, $exampleDocument, , $outputDocumentPath) = $this->tempFiles();
         $this->writeFile($exampleDocument, 'How are you?');
 
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $translator->translateDocument(
             $exampleDocument,
             $outputDocumentPath,
@@ -78,11 +92,14 @@ class TranslateDocumentTest extends DeepLTestBase
         $this->assertEquals('Wie geht es dir?', $this->readFile($outputDocumentPath));
     }
 
-    public function testTranslateDocumentFailureDuringTranslation()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTranslateDocumentFailureDuringTranslation(?ClientInterface $httpClient)
     {
         list(, $exampleDocument, , $outputDocumentPath) = $this->tempFiles();
         $this->writeFile($exampleDocument, DeepLTestBase::EXAMPLE_TEXT['de']);
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
 
         // Translating text from DE to DE will trigger error
         try {
@@ -99,24 +116,30 @@ class TranslateDocumentTest extends DeepLTestBase
         }
     }
 
-    public function testInvalidDocument()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testInvalidDocument(?ClientInterface $httpClient)
     {
         list($tempDir, , , $outputDocumentPath) = $this->tempFiles();
         $documentPath = $tempDir . '/document.invalid';
         $this->writeFile($documentPath, DeepLTestBase::EXAMPLE_TEXT['en']);
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
 
         $this->expectExceptionMessageMatches('/(nvalid file)|(file extension)/');
         $translator->translateDocument($documentPath, $outputDocumentPath, 'en', 'de');
     }
 
-    public function testTranslateDocumentLowLevel()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testTranslateDocumentLowLevel(?ClientInterface $httpClient)
     {
         $this->needsMockServer();
         list(, $exampleDocument, , $outputDocumentPath) = $this->tempFiles();
         // Set a small document queue time to attempt downloading a queued document
         $this->sessionDocQueueTime = 0.2;
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
 
         $handle = $translator->uploadDocument($exampleDocument, 'en', 'de');
         $status = $translator->getDocumentStatus($handle);
@@ -137,9 +160,12 @@ class TranslateDocumentTest extends DeepLTestBase
         $this->assertEquals(DeepLTestBase::EXAMPLE_DOCUMENT_OUTPUT, $this->readFile($outputDocumentPath));
     }
 
-    public function testRecreateDocumentHandleInvalid()
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testRecreateDocumentHandleInvalid(?ClientInterface $httpClient)
     {
-        $translator = $this->makeTranslator();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $handle = new \DeepL\DocumentHandle(str_repeat('1234', 8), str_repeat('5678', 16));
         $this->expectException(\DeepL\NotFoundException::class);
         $translator->getDocumentStatus($handle);
