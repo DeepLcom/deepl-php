@@ -89,7 +89,7 @@ class TranslateTextTest extends DeepLTestBase
 
     public function invalidTextParameters(): array
     {
-        return [[''], [['']]];
+        return [[42], [[42]]];
     }
 
     /**
@@ -118,6 +118,17 @@ class TranslateTextTest extends DeepLTestBase
         $timeAfter = microtime(true);
         // Elapsed time should be at least 1 second
         $this->assertGreaterThan(1.0, $timeAfter - $timeBefore);
+    }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testEmptyText(?ClientInterface $httpClient)
+    {
+        $this->needsRealServer();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+
+        $this->assertEquals('', $translator->translateText('', null, 'de')->text);
     }
 
     /**
