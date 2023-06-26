@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## [Unreleased]
+
+
+## [1.5.0] - 2023-06-26
 ### Added
 * Allow users to supply their own custom HTTP client to the `Translator` object, in order to configure timeouts, security features etc more granularly.
   * Thanks to [VincentLanglet](https://github.com/VincentLanglet) for the good input and work in [#22](https://github.com/DeepLcom/deepl-php/pull/22)
@@ -107,7 +110,8 @@ Stable release.
 Initial version.
 
 
-[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/DeepLcom/deepl-php/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/DeepLcom/deepl-php/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/DeepLcom/deepl-php/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/DeepLcom/deepl-php/compare/v1.2.0...v1.2.1
