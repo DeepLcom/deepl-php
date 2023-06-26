@@ -129,6 +129,14 @@ class TranslateTextTest extends DeepLTestBase
         $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
 
         $this->assertEquals('', $translator->translateText('', null, 'de')->text);
+        $extractTextFromResult = function ($res) {
+            return $res->text;
+        };
+        $this->assertEquals([''], \array_map($extractTextFromResult, $translator->translateText([''], null, 'de')));
+        $this->assertEquals(
+            ['', ''],
+            \array_map($extractTextFromResult, $translator->translateText(['', ''], null, 'de'))
+        );
     }
 
     /**

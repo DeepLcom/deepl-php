@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * Allow users to supply their own custom HTTP client to the `Translator` object, in order to configure timeouts, security features etc more granularly.
   * Thanks to [VincentLanglet](https://github.com/VincentLanglet) for the good input and work in [#22](https://github.com/DeepLcom/deepl-php/pull/22)
+### Fixed
+* Allow users to translate empty strings without throwing an error.
+  * Thanks to [VincentLanglet](https://github.com/VincentLanglet) for the work in [#24](https://github.com/DeepLcom/deepl-php/pull/24)
 
 
 ## [1.4.0] - 2023-05-24
