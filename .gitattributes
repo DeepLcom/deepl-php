@@ -1,0 +1,7 @@
+/.* export-ignore
+/tests/ export-ignore
+/*.md export-ignore
+/Dockerfile export-ignore
+/license_checker.sh export-ignore
+/phpcs.xml export-ignore
+/phpunit.xml export-ignore
