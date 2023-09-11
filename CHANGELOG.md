@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [1.5.1] - 2023-09-11
 ### Fixed
 * Add `.gitattributes` file to exclude irrelevant files from package download.
   * Thanks to [VincentLanglet](https://github.com/VincentLanglet) for [#30](https://github.com/DeepLcom/deepl-php/pull/30)
@@ -114,7 +114,7 @@ Stable release.
 Initial version.
 
 
-[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.5.0...HEAD
+[1.5.1]: https://github.com/DeepLcom/deepl-php/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/DeepLcom/deepl-php/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/DeepLcom/deepl-php/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/DeepLcom/deepl-php/compare/v1.2.1...v1.3.0
