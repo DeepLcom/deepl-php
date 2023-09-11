@@ -1,6 +1,5 @@
 ARG PHP_VERSION
-ARG CI_CONTAINER_REPO
-FROM ${CI_CONTAINER_REPO}/php:${PHP_VERSION}
+FROM php:${PHP_VERSION}
 RUN apk update && apk upgrade --no-cache
 RUN apk add git -q
 

@@ -9,7 +9,7 @@ include:
       - '/templates/.secret-detection.yml'
 
 variables:
-  DOCKER_IMAGE_PREFIX: $CONTAINER_REGISTRY/oss-client-libraries/$CI_PROJECT_NAME-build
+  DOCKER_IMAGE_PREFIX: ${HARBOR_REGISTRY}/${HARBOR_REGISTRY_PROJECT}/${CI_PROJECT_NAME}-build
   COMPOSER_HOME: /.composer
 
 # Global --------------------------
@@ -45,8 +45,8 @@ build image:
   extends: .buildkit
   variables:
     DOCKER_IMAGE: ${DOCKER_IMAGE_PREFIX}_${PHP_VERSION}
-    BUILDKIT_IMAGE: $DOCKER_IMAGE:latest
-    BUILDKIT_EXTRA_ARGS: "--opt build-arg:PHP_VERSION=${PHP_VERSION} --opt build-arg:CI_CONTAINER_REPO=${CI_REGISTRY_IMAGE}"
+    BUILDKIT_IMAGE: ${DOCKER_IMAGE}:latest
+    BUILDKIT_EXTRA_ARGS: "--opt build-arg:PHP_VERSION=${PHP_VERSION}"
   parallel:
     matrix:
       - PHP_VERSION: "8.1-alpine"

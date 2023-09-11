@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * Add `.gitattributes` file to exclude irrelevant files from package download.
   * Thanks to [VincentLanglet](https://github.com/VincentLanglet) for [#30](https://github.com/DeepLcom/deepl-php/pull/30)
+* Internal CI improvements.
 
 
 ## [1.5.0] - 2023-06-26
