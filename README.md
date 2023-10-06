@@ -35,6 +35,11 @@ composer require deeplcom/deepl-php
 
 The library officially supports PHP 7.3 and later.
 
+Starting in 2024, we will drop support for older PHP versions that have reached
+official end-of-life. You can find the PHP versions and support timelines 
+[here][php-version-list].
+To continue using this library, you should update to PHP 8.1+.
+
 ## Usage
 
 Construct a `Translator` object. The first argument is a string containing your
@@ -535,6 +540,8 @@ environment variables defined referring to the mock-server.
 [deepl-mock]: https://www.github.com/DeepLcom/deepl-mock
 
 [issues]: https://www.github.com/DeepLcom/deepl-php/issues
+
+[php-version-list]: https://www.php.net/supported-versions.php
 
 [pro-account]: https://www.deepl.com/pro-account/?utm_source=github&utm_medium=github-php-readme
 
