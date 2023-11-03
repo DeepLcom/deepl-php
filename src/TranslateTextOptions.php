@@ -36,6 +36,13 @@ class TranslateTextOptions
      */
     public const FORMALITY = 'formality';
 
+    /** Specifies additional context to influence translations, that is not
+     * translated itself. Note this is an **alpha feature**: it may be deprecated at
+     * any time, or incur charges if it becomes generally available.
+     * See the API documentation for more information and example usage.
+     */
+    public const CONTEXT = 'context';
+
     /** Type of tags to parse before translation, options are 'html' and 'xml'. */
     public const TAG_HANDLING = 'tag_handling';
 

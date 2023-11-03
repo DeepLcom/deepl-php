@@ -645,6 +645,9 @@ class Translator
             $params[TranslateTextOptions::OUTLINE_DETECTION] =
                 $this->toBoolString($options[TranslateTextOptions::OUTLINE_DETECTION]);
         }
+        if (isset($options[TranslateTextOptions::CONTEXT])) {
+            $params[TranslateTextOptions::CONTEXT] = $options[TranslateTextOptions::CONTEXT];
+        }
         if (isset($options[TranslateTextOptions::NON_SPLITTING_TAGS])) {
             $params[TranslateTextOptions::NON_SPLITTING_TAGS] =
                 $this->joinTagList($options[TranslateTextOptions::NON_SPLITTING_TAGS]);

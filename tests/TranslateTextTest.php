@@ -243,6 +243,23 @@ class TranslateTextTest extends DeepLTestBase
     /**
      * @dataProvider provideHttpClient
      */
+    public function testContext(?ClientInterface $httpClient)
+    {
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+        // In German, "scharf" can mean:
+        // - spicy/hot when referring to food, or
+        // - sharp when referring to other objects such as a knife (Messer).
+        $input = 'Das ist scharf!';
+        $translator->translateText($input, 'de', 'en-US');
+        // Result: "That is hot!"
+
+        $translator->translateText($input, 'de', 'en-US', [TranslateTextOptions::CONTEXT => 'Das ist ein Messer.']);
+        // Result: "That is sharp!"
+    }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
     public function testTagHandlingBasic(?ClientInterface $httpClient)
     {
         $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
