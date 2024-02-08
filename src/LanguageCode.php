@@ -14,6 +14,9 @@ namespace DeepL;
  */
 class LanguageCode
 {
+    /** Arabic language code, may be used as source or target language. */
+    public const ARABIC = 'ar';
+
     /** Bulgarian language code, may be used as source or target language. */
     public const BULGARIAN = 'bg';
 

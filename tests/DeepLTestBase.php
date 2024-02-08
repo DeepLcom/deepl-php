@@ -31,6 +31,7 @@ class DeepLTestBase extends TestCase
     protected $sessionExpectProxy;
 
     protected const EXAMPLE_TEXT = [
+        'ar' => 'شعاع البروتون',
         'bg' => 'протонен лъч',
         'cs' => 'protonový paprsek',
         'da' => 'protonstråle',
