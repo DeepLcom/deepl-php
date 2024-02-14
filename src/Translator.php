@@ -143,11 +143,12 @@ class Translator
 
     /**
      * Translates specified text string or array of text strings into the target language.
-     * @param $texts string|string[] A single string or array of strings containing input texts to translate.
+     * @param string|string[] $texts A single string or array of strings containing input texts to translate.
      * @param string|null $sourceLang Language code of input text language, or null to use auto-detection.
      * @param string $targetLang Language code of language to translate into.
      * @param array $options Translation options to apply. See \DeepL\TranslateTextOptions.
      * @return TextResult|TextResult[] A TextResult or array of TextResult objects containing translated texts.
+     * @phpstan-return ($texts is array ? TextResult[] : TextResult)
      * @throws DeepLException
      * @see \DeepL\TranslateTextOptions
      */
