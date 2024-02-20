@@ -40,6 +40,24 @@ class TranslateTextTest extends DeepLTestBase
     /**
      * @dataProvider provideHttpClient
      */
+    public function testMultipleTextWithInvalidContent(?ClientInterface $httpClient)
+    {
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+        $input = [
+            DeepLTestBase::EXAMPLE_TEXT['de'],
+            'Portal<span></span>',
+            DeepLTestBase::EXAMPLE_TEXT['en'],
+        ];
+        $result = $translator->translateText($input, null, 'fr');
+        $this->assertEquals(DeepLTestBase::EXAMPLE_TEXT['fr'], $result[0]->text);
+        $this->assertEquals('de', $result[0]->detectedSourceLang);
+        $this->assertEquals(DeepLTestBase::EXAMPLE_TEXT['fr'], $result[2]->text);
+        $this->assertEquals('en', $result[2]->detectedSourceLang);
+    }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
     public function testLangCodeMixedCase(?ClientInterface $httpClient)
     {
         $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
