@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Document Title -->
+    <title>DeepL PHP API - upload and translate a document with a progress bar</title>
+
+    <!-- Meta Data -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Upload a text or HTML document from a local file or an URL with the DeepL PHP API using Javascript Fetch() and show a progress bar during the upload.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.2/cosmo/bootstrap.min.css" integrity="sha512-GVdrCO8+HISboPZQ1DEaBPFw9qrVh8rNqCOZXsk04l2s+kn/gHR8fTq2Hvxz1fkZdhjf5EQJVrxuRWLoXpcngA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <!-- Main Container -->
+    <div class="container py-4">
+        <!-- Page Header -->
+        <h1 class="mb-4">DeepL PHP API - <br><small class="fs-4 text-secondary">File upload &amp; translation with Javascript Fetch() and progress bar</small></h1>
+
+        <!-- Bulleted List -->
+        <ol class="px-5 py-4 mb-5 border fw-semibold">
+            <li class="mb-2">Choose a <code>.txt</code> or <code>.html</code> file to upload.</li>
+            <li class="mb-2">The application calls the Deeppl API, which starts the translation and returns the estimated translation duration.</li>
+            <li class="mb-2">The progress bar is triggered.</li>
+            <li>The application sends a 2nd call to the API and waits for the result of the translation.</li>
+        </ol>
+
+        <!-- Div to hold the result of the translation -->
+        <div id="end-result"></div>
+
+        <!-- Form to upload the file and translate it -->
+        <form id="translation-form" action="#" method="post" enctype="multipart/form-data" novalidate>
+
+            <!-- Upload Type Radio Buttons -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <label for="upload-type" class="form-label fw-semibold mb-1 me-4">Choose an option</label>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" id="upload-file" name="upload-type" value="upload-file" checked>
+                        <label class="form-check-label" for="upload-file">Upload a text or html file</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" id="enter-url" name="upload-type" value="enter-url">
+                        <label class="form-check-label" for="enter-url">Enter an URL</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload and URL Input Fields -->
+            <div class="row mb-4">
+                <div id="upload-file-section" class="col-12">
+                    <!-- File Upload Label -->
+                    <label for="uploaded-file" class="form-label fw-semibold mb-1">Select a file to upload</label>
+                    <!-- File Upload Input -->
+                    <input type="file" class="form-control" name="uploaded-file">
+                </div>
+                <div id="enter-url-section" class="d-none col-12">
+                    <!-- URL Input Label -->
+                    <label for="url-input" class="form-label fw-semibold mb-1">Enter the URL</label>
+                    <!-- URL Input Field -->
+                    <input type="url" class="form-control" name="url-input" id="url-input" placeholder="Enter the URL">
+                </div>
+            </div>
+
+            <!-- Source and Target Language Select Fields -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <!-- Source Language Label -->
+                    <label for="source-language" class="form-label fw-semibold mb-1">Source Language</label>
+                    <!-- Source Language Select -->
+                    <select class="form-select" id="source-language" name="source-language" aria-label="Select the source language" readonly="">
+                        <option value="cs">Czech</option>
+                        <option value="en-GB" selected>English</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt-PT">Portuguese</option>
+                        <option value="es">Spanish</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <!-- Target Language Label -->
+                    <label for="target-language" class="form-label fw-semibold mb-1">Target Language</label>
+                    <!-- Target Language Select -->
+                    <select class="form-select internal-links-listener existing-translations-listener" id="target-language" name="target-language" aria-label="Select the target language">
+                        <option value="cs">Czech</option>
+                        <option value="en-GB">English</option>
+                        <option value="fr" selected>French</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt-PT">Portuguese</option>
+                        <option value="es">Spanish</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-lg w-100 btn-primary">Translate</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Progress Bar Div -->
+        <div id="progress" class="progress d-none" style="height:1.5rem;">
+            <!-- Progress Bar -->
+            <div id="progress-bar" class="progress-bar progress-bar-striped bg-danger active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;font-size:.75rem;"> 0% </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script>
+        const enterURLSection    = document.getElementById('enter-url-section');
+        const deeplForm          = document.getElementById('translation-form');
+        const resultDiv          = document.getElementById('end-result');
+        const fileInput          = document.querySelector('input[name="uploaded-file"]');
+        const progressBar        = document.getElementById('progress-bar');
+        const uploadFileSection  = document.getElementById('upload-file-section');
+        const uploadTypeRadios   = document.querySelectorAll('input[name="upload-type"]');
+
+        let fileToUpload         = null;
+
+        /**
+        * Starts the translation process by making a request to the start-translation.php endpoint.
+        *
+        * @param {FormData} formData - the form data containing the uploaded file or URL, source and target languages, etc.
+        * @returns {void}
+        */
+        const translation = {
+            start: (formData) => {
+                fetch('ajax/start-translation.php', {
+                    method: 'post',
+                    body: formData,
+                    cache: 'no-store',
+                    credentials: 'include'
+                }).then(response => response.json()).then((data) => {
+                    console.log(data.response);
+
+                    if (data.status !== 'success') {
+                        translation.end(data);
+                        return;
+                    }
+
+                    // extract the document handle and status from the response
+                    let documentHandle = data.response.documentHandle;
+                    let documentStatus = data.response.documentStatus;
+
+                    // get the number of seconds remaining, if available
+                    let secondsRemaining = 5;
+                    if (documentStatus.secondsRemaining !== null) {
+                        secondsRemaining = documentStatus.secondsRemaining;
+                    }
+
+                    console.log(secondsRemaining + ' seconds remaining');
+
+                    // update the progress bar with the number of seconds remaining
+                    translation.progress(secondsRemaining);
+
+                    // check if the translation is complete
+                    if (documentStatus.status !== 'done') {
+                        // prepare the data for the document handle request
+                        const handleData = new FormData(deeplForm);
+                        handleData.append('document-handle', JSON.stringify(documentHandle));
+                        handleData.append('filename', data.filename);
+
+                        // make the request to wait-for-translation-complete.php
+                        fetch('ajax/wait-for-translation-complete.php', {
+                            method: 'post',
+                            body: new URLSearchParams(handleData).toString(),
+                            headers: {
+                                'Content-type': 'application/x-www-form-urlencoded; charset=utf-8'
+                            },
+                            cache: 'no-store',
+                            credentials: 'include'
+                        }).then(response => response.json()).then((data) => {
+                            translation.end(data);
+                        }).catch(function(error) {
+                            alert(error);
+                        });
+                    } else {
+                        translation.end(data);
+                    }
+                }).catch(error => {
+                    console.log(error);
+                    resultDiv.innerHTML = 'Error: ' + error;
+                });
+            },
+
+            /**
+            * Updates the progress bar with the number of seconds remaining.
+            *
+            * @param {number} secondsRemaining - the number of seconds remaining
+            * @returns {void}
+            */
+            progress: (secondsRemaining) => {
+                progressBar.parentNode.classList.remove('d-none');
+                const progressUpdateIntervalMs = 100;
+                const totalStepsCount = Math.floor(secondsRemaining * 1000 / progressUpdateIntervalMs);
+                let progressBarValue = 0;
+                let percentComplete;
+                const step = progressUpdateIntervalMs / totalStepsCount;
+                // add a timer to update progress from 0% to 100%. Total time is secondsRemaining.
+                const intervalID = setInterval(() => {
+                    progressBarValue += step;
+                    percentComplete = parseInt(progressBarValue);
+                    if (percentComplete > 100) {
+                        // due to the interval and steps count, percentComplete can be greater than 100.
+                        percentComplete = 100;
+                    }
+                    // console.log(percentComplete);
+                    progressBar.style.width = percentComplete + '%';
+                    progressBar.textContent = percentComplete + '%';
+                    if (percentComplete == 100) {
+                        clearInterval(intervalID);
+                    }
+                }, progressUpdateIntervalMs);
+            },
+
+            /**
+            * Displays the translation result and any errors.
+            *
+            * @param {object} data - the response data from the API
+            * @returns {void}
+            */
+            end: (data) => {
+                progressBar.parentNode.classList.add('d-none');
+
+                if (data.status === 'success') {
+                    const documentStatus = data.documentStatus;
+                    if (documentStatus.status === 'done') {
+                        // create a success alert with a link to the translated document
+                        const successAlert = document.createElement('div');
+                        successAlert.classList.add('alert', 'alert-success', 'alert-dismissible', 'fade', 'show');
+                        successAlert.innerHTML = '<p><strong>All done!</strong></p><p><a href="' + data.downloadUrl + '" target="_blank">Open the translated document</a></p><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+                        resultDiv.appendChild(successAlert);
+                    }
+                } else {
+
+                    // create an error alert with the error message
+                    const errorAlert = document.createElement('div');
+                    errorAlert.classList.add('alert', 'alert-danger', 'alert-dismissible', 'fade', 'show');
+                    if (data.msg.xdebug_message) {
+                        errorAlert.innerHTML = data.msg.xdebug_message;
+                    } else {
+                        errorAlert.innerHTML = data.msg;
+                    }
+                    errorAlert.innerHTML += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+                    resultDiv.appendChild(errorAlert);
+                }
+
+                // scroll to top of page
+                window.scrollTo(0, 0);
+            }
+        }
+
+        /**
+        * This function is used to validate the form data before starting the translation process.
+        * It checks if the source and target languages are the same, and if the user has chosen to upload a file,
+        * it checks if the file is a valid text file. If the data is valid, the function returns true,
+        * otherwise it displays an alert and returns false.
+        *
+        * @returns {boolean} true if the form data is valid, false otherwise
+        */
+        const validateFormData = function() {
+            // get the upload-type value
+            const uploadType = deeplForm.querySelector('input[name="upload-type"]:checked').value;
+            const srcLanguage = deeplForm.querySelector('select[name="source-language"]').value;
+            const targetLanguage = deeplForm.querySelector('select[name="target-language"]').value;
+
+            if (srcLanguage == targetLanguage) {
+                alert('Do you really want to translate from ' + srcLanguage + ' to ' + targetLanguage + '?');
+                return false;
+            }
+
+            if (uploadType === 'upload-file') {
+                // get the uploaded-file value
+                const uploadedFile = fileInput.files[0];
+
+                if (uploadedFile === undefined) {
+                    alert('Please select a file to upload.');
+                    return false;
+                }
+
+                // get the file name
+                const fileName = uploadedFile.name;
+
+                // get the file extension
+                const fileExtension = fileName.split('.').pop();
+
+                if (fileExtension != 'txt') {
+                    alert('Only.txt files are allowed. Please upload a valid text file.');
+                    return false;
+                }
+
+                // get the file mime type
+                const fileMimeType = uploadedFile.type;
+
+                if (fileMimeType !== 'text/plain') {
+                    alert('Invalid file type. Only text files are allowed.');
+                    return false;
+                }
+
+                return true;
+            } else if (uploadType === 'enter-url') {
+                // get the url value
+                const urlInput = deeplForm.querySelector('input[name="url-input"]').value;
+
+                // check if the url input is a valid url
+                try {
+                    new URL(urlInput);
+                } catch (error) {
+                    alert('Please enter a valid URL.');
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        uploadTypeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                const selectedType = radio.value;
+                if (selectedType === 'upload-file') {
+                    uploadFileSection.classList.remove('d-none');
+                    enterURLSection.classList.add('d-none');
+                } else if (selectedType === 'enter-url') {
+                    uploadFileSection.classList.add('d-none');
+                    enterURLSection.classList.remove('d-none');
+                }
+            });
+        });
+
+        deeplForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (validateFormData()) {
+                const formData = new FormData(deeplForm);
+                translation.start(formData);
+            }
+
+            return false;
+        });
+    </script>
+</body>
+
+</html>
