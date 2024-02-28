@@ -40,6 +40,20 @@ class TranslateTextTest extends DeepLTestBase
     /**
      * @dataProvider provideHttpClient
      */
+    public function testWithWeirdContent(?ClientInterface $httpClient)
+    {
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+        $input = ['Portal<span></span>'];
+        $result = $translator->translateText($input, 'en', 'fr', [
+            TranslateTextOptions::TAG_HANDLING => 'xml',
+            TranslateTextOptions::IGNORE_TAGS => 'notranslate',
+        ]);
+        $this->assertInstanceOf(TextResult::class, $result);
+    }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
     public function testLangCodeMixedCase(?ClientInterface $httpClient)
     {
         $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
