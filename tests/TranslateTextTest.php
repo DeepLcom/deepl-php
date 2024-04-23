@@ -43,7 +43,7 @@ class TranslateTextTest extends DeepLTestBase
     public function testWithWeirdContent(?ClientInterface $httpClient)
     {
         $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
-        $input = ['Portal<span></span>'];
+        $input = 'Portal<span></span>';
         $result = $translator->translateText($input, 'en', 'fr', [
             TranslateTextOptions::TAG_HANDLING => 'xml',
             TranslateTextOptions::IGNORE_TAGS => 'notranslate',
