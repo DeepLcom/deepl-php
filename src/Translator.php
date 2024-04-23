@@ -171,6 +171,12 @@ class Translator
         $this->checkStatusCode($response);
 
         list(, $content) = $response;
+
+        // Deepl API responses might have invalid UTF8 sequence
+        // @see https://github.com/DeepLcom/deepl-php/pull/43
+        mb_substitute_character(0xFFFD);
+        $content = mb_convert_encoding($content, 'UTF-8', 'UTF-8');
+
         try {
             $decoded = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
