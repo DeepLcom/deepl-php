@@ -40,8 +40,9 @@ class TranslateTextTest extends DeepLTestBase
     /**
      * @dataProvider provideHttpClient
      */
-    public function testWithWeirdContent(?ClientInterface $httpClient)
+    public function testHandlingResponseWithInvalidUtf8(?ClientInterface $httpClient)
     {
+        $this->needsRealServer();
         $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $input = 'Portal<span></span>';
         $result = $translator->translateText($input, 'en', 'fr', [
