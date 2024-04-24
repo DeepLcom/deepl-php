@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+### Fixed
+* Added a workaround for rare cases that the DeepL API responds with invalid
+  UTF-8 sequences. In these cases the [replacement character][replacement-char]
+  "�" (U+FFFD) will replace invalid sequences.
+  * Thanks to [VincentLanglet](https://github.com/VincentLanglet) for 
+    [#43](https://github.com/DeepLcom/deepl-php/pull/43)
+
+
 ## [1.7.1] - 2024-02-28
 ### Fixed
 * Update `VERSION` values to 1.7.1
@@ -139,6 +148,7 @@ Stable release.
 Initial version.
 
 
+[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.7.1...HEAD 
 [1.7.1]: https://github.com/DeepLcom/deepl-php/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/DeepLcom/deepl-php/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/DeepLcom/deepl-php/compare/v1.5.1...v1.6.0
@@ -156,3 +166,5 @@ Initial version.
 [0.2.0]: https://github.com/DeepLcom/deepl-php/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/DeepLcom/deepl-php/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/DeepLcom/deepl-php/releases/tag/v0.1.0
+
+[replacement-char]: https://en.wikipedia.org/wiki/Replacement_character
