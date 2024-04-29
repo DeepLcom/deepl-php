@@ -40,6 +40,31 @@ class TranslateTextTest extends DeepLTestBase
     /**
      * @dataProvider provideHttpClient
      */
+    public function testMixedDirectionText(?ClientInterface $httpClient)
+    {
+        $this->needsRealServer();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+        $options = [
+            TranslateTextOptions::TAG_HANDLING => 'xml',
+            TranslateTextOptions::IGNORE_TAGS => 'ignore',
+        ];
+
+        $ar_ignore_part = "<ignore>يجب تجاهل هذا الجزء.</ignore>";
+        $en_sentence_with_ar_ignore_part =
+            "<p>This is a <b>short</b> <i>sentence</i>. $ar_ignore_part This is another sentence.";
+
+        $en_ignore_part = "<ignore>This part should be ignored.</ignore>";
+        $ar_sentence_with_en_ignore_part = "<p>هذه <i>جملة</i> <b>قصيرة</b>. $en_ignore_part هذه جملة أخرى.</p>";
+
+        $en_result = $translator->translateText($en_sentence_with_ar_ignore_part, null, 'en-US', $options);
+        $this->assertStringContainsString($ar_ignore_part, $en_result);
+        $ar_result = $translator->translateText($ar_sentence_with_en_ignore_part, null, 'ar', $options);
+        $this->assertStringContainsString($en_ignore_part, $ar_result);
+    }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
     public function testHandlingResponseWithInvalidUtf8(?ClientInterface $httpClient)
     {
         $this->needsRealServer();
