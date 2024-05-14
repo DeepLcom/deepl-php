@@ -67,6 +67,12 @@ class DeepLTestBase extends TestCase
         'zh' => '质子束',
     ];
 
+    protected const DOC_MINIFICATION_TEST_FILES_MAPPING = [
+        'example_document_template.docx' => '',
+        'example_presentation_template.pptx' => '',
+        'example_zip_template.zip' => '',
+    ];
+
     protected const EXAMPLE_DOCUMENT_INPUT = DeepLTestBase::EXAMPLE_TEXT['en'];
     protected const EXAMPLE_DOCUMENT_OUTPUT = DeepLTestBase::EXAMPLE_TEXT['de'];
     protected $EXAMPLE_LARGE_DOCUMENT_INPUT;
@@ -240,6 +246,66 @@ class DeepLTestBase extends TestCase
             return $exception;
         }
         $this->fail("Expected exception of class '$class' but nothing was thrown");
+    }
+
+    public function createDocumentMinificationTestFiles(): void
+    {
+        foreach (DeepLTestBase::DOC_MINIFICATION_TEST_FILES_MAPPING as $templateFilename => $inflatedFilename) {
+            $testDocTemplateFile = __DIR__ . '/../resources/' . $templateFilename;
+            $testDocInflatedFile = __DIR__ . '/../resources/' . $inflatedFilename;
+            $this->inflateTestFileWithLargeImage($testDocTemplateFile, $testDocInflatedFile);
+        }
+    }
+
+    public function removeDocumentMinificationTestFiles()
+    {
+        foreach (DeepLTestBase::DOC_MINIFICATION_TEST_FILES_MAPPING as $inflatedFileToDelete) {
+            unlink($inflatedFileToDelete);
+        }
+    }
+
+    private function inflateTestFileWithLargeImage(string $inputFile, string $outputFile)
+    {
+        $extractionDir = __DIR__ . '/../resources/';
+        if (!mkdir($extractionDir)) {
+            throw new \RuntimeException('Failed creating dir for test files for doc minification');
+        }
+        $zip = new \ZipArchive();
+        if ($zip->open($inputFile) === true) {
+            $zip->extractTo($extractionDir);
+            $zip->close();
+        } else {
+            throw new \RuntimeException('Failed inflating test file for doc minification');
+        }
+
+        $inflatedImage = imagecreatetruecolor(18384, 18384);
+        $white = imagecolorallocate($inflatedImage, 255, 255, 255);
+        imagefill($inflatedImage, 0, 0, $white);
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($extractionDir));
+        foreach ($iterator as $file) {
+            if ($file->getExtension() == 'png') {
+                imagepng($inflatedImage, $file->getPathname());
+            }
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($outputFile, \ZipArchive::CREATE) === true) {
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($extractionDir));
+            foreach ($iterator as $file) {
+                if (substr($file, -2) === '/.' || substr($file, -3) === '/..') {
+                    continue;
+                }
+                $file->isDir() ?
+                    $zip->addEmptyDir(str_replace($extractionDir . '/', '', $file . '/'))
+                    : $zip->addFile($file, str_replace($extractionDir . '/', '', $file));
+                $zip->setCompressionName($file, \ZipArchive::CM_STORE);
+            }
+            $zip->close();
+        } else {
+            throw new \RuntimeException('Failed creating inflated test file for doc minification');
+        }
+
+        DocumentMinifier::recursivelyDeleteDirectory($extractionDir);
     }
 
     /**

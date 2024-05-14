@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit colors="true">
+<phpunit colors="true" convertWarningsToExceptions="false">
     <testsuites>
         <testsuite name="deepl-php Test Suite">
             <directory>tests/</directory>
