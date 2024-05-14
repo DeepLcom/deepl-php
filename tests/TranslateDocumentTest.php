@@ -170,4 +170,40 @@ class TranslateDocumentTest extends DeepLTestBase
         $this->expectException(\DeepL\NotFoundException::class);
         $translator->getDocumentStatus($handle);
     }
+
+    /**
+     * @dataProvider provideHttpClient
+     * @doesNotPerformAssertions
+     */
+    public function testMinifyAndTranslateDocuments(?ClientInterface $httpClient)
+    {
+        // PHPUnit will fail tests without assertions; the test is only run if the binary files are present
+        $this->assertTrue(true);
+
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+        list(, , , $outputDocumentPath) = $this->tempFiles();
+        $exampleDocs = ['/../resources/example_document.docx', '/../resources/example_presentation.pptx'];
+        foreach ($exampleDocs as $exampleDoc) {
+            $curDoc = __DIR__ . $exampleDoc;
+            if (!file_exists($curDoc)) {
+                trigger_error(
+                    "The file $curDoc could not be found and document minification could not be tested.",
+                    E_USER_WARNING
+                );
+                continue;
+            }
+            $status = $translator->translateDocument(
+                $curDoc,
+                $outputDocumentPath,
+                'en',
+                'de',
+                array(TranslateDocumentOptions::ENABLE_DOCUMENT_MINIFICATION => true)
+            );
+
+            $this->assertEquals(50000, $status->billedCharacters);
+            $this->assertEquals('done', $status->status);
+            $this->assertTrue($status->done());
+            unlink($outputDocumentPath);
+        }
+    }
 }

@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## Unreleased
+### Added
+* Added document minification as a feature before document translation, to allow
+translation of large `docx` or `pptx` files. For more info check the README.
+
+
 ## [1.7.2] - 2024-04-24
 ### Fixed
 * Added a workaround for rare cases that the DeepL API responds with invalid

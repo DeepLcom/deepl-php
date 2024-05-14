@@ -16,3 +16,6 @@ reports/
 
 # Ignore cached PHPUnit results.
 .phpunit.result.cache
+
+# Optional binary test files
+resources/

@@ -24,4 +24,7 @@ final class TranslateDocumentOptions
 
     /** Set to string containing a glossary ID to use the glossary for translation. */
     public const GLOSSARY = 'glossary';
+
+    /** Set to `true` in order to use Document Minification for translation, if available. */
+    public const ENABLE_DOCUMENT_MINIFICATION = 'enable_document_minification';
 }

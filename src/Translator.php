@@ -219,9 +219,22 @@ class Translator
             throw new DocumentTranslationException("File already exists at output file path $outputFile");
         }
         try {
-            $handle = $this->uploadDocument($inputFile, $sourceLang, $targetLang, $options);
+            $minifier = null;
+            $willMinify = ($options[TranslateDocumentOptions::ENABLE_DOCUMENT_MINIFICATION] ?? false) &&
+                DocumentMinifier::canMinifyFile($inputFile);
+            $fileToUpload = $inputFile;
+            if ($willMinify) {
+                $minifier = new DocumentMinifier();
+                $minifier->minifyDocument($inputFile, true);
+                $fileToUpload = $minifier->getMinifiedDocFile($inputFile);
+            }
+            $handle = $this->uploadDocument($fileToUpload, $sourceLang, $targetLang, $options);
             $status = $this->waitUntilDocumentTranslationComplete($handle);
             $this->downloadDocument($handle, $outputFile);
+            if ($willMinify) {
+                // Translated minified file is at `$outputFile`. Reinsert media (deminify) before returning
+                $minifier->deminifyDocument($outputFile, $outputFile, true);
+            }
             return $status;
         } catch (DeepLException $error) {
             if (file_exists($outputFile)) {

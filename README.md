@@ -201,11 +201,62 @@ using the following keys:
 
 -   `formality`: same as in [Text translation options](#text-translation-options).
 -   `glossary`: same as in [Text translation options](#text-translation-options).
+-   `minification`: A `bool` value. If set to `true`, the library will try to minify a document before translating it through the API, sending a smaller document if the file contains a lot of media. This is currently only supported for `pptx` files. See also [Document minification](#document-minification). Note that this only works in the high-level `translateDocument` method, not `uploadDocument`.
 
 The `uploadDocument` function also supports these options.
 
 The `TranslateDocumentOptions` class defines constants for the options above,
 for example `TranslateDocumentOptions::FORMALITY` is defined as `'formality'`.
+
+#### Document minification
+
+In some contexts, one can end up with large document files (e.g. PowerPoint presentations
+or Word files with many contributors, especially in a larger organization). However, the
+DeepL API enforces a limit of 30 MB for most of these files (see Usage Limits in the docs).
+In the case that most of this size comes from media included in the documents (e.g. images,
+videos, animations), document minification can help.
+In this case, the library will create a temporary directory to extract the document into,
+replace the large media with tiny placeholders, create a minified document, translate that
+via the API, and re-insert the original media into the original file. Please note that this
+requires a bit of additional (temporary) disk space, we recommend at least 2x the file size
+of the document to be translated.
+
+To use document minification, simply pass the option to the `translateDocument` function:
+
+```php
+$translator->translateDocument(
+    $inFile, $outFile, 'en', 'de', [TranslateDocumentOptions::ENABLE_DOCUMENT_MINIFICATION => true]
+);
+```
+
+In order to use document minification with the lower-level `uploadDocument`, 
+`waitUntilDocumentTranslationComplete` and `downloadDocument` methods as well as other details,
+see the `DocumentMinifier` class.
+
+Currently supported document types for minification:
+
+1. `pptx`
+2. `docx`
+
+Currently supported media types for minification:
+
+1. `png`
+2. `jpg`
+3. `jpeg`
+4. `emf`
+5. `bmp`
+6. `tiff`
+7. `wdp`
+8. `svg`
+9. `gif`
+10. `mp4`
+11. `asf`
+12. `avi`
+13. `m4v`
+14. `mpg`
+15. `mpeg`
+16. `wmv`
+17. `mov`
 
 ### Glossaries
 

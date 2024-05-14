@@ -1,5 +1,6 @@
 /.* export-ignore
 /tests/ export-ignore
+/resources/ export-ignore
 /*.md export-ignore
 /Dockerfile export-ignore
 /license_checker.sh export-ignore
