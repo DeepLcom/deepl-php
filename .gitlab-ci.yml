@@ -127,7 +127,8 @@ secret_detection:
         export DEEPL_PROXY_URL=http://deepl-mock:3001
         export DEEPL_MOCK_PROXY_SERVER_PORT=3001
       fi
-    - vendor/bin/phpunit
+    - echo $CI_PIPELINE_ID
+    - vendor/bin/phpunit --random-order-seed $CI_PIPELINE_ID
   artifacts:
     reports:
       coverage_report:
