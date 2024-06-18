@@ -92,7 +92,7 @@ class TranslateTextTest extends DeepLTestBase
         $this->assertEquals('en', $result->detectedSourceLang);
     }
 
-    public function deprecatedTargetLang(): array
+    public static function deprecatedTargetLang(): array
     {
         return [['en'], ['pt']];
     }
@@ -127,7 +127,7 @@ class TranslateTextTest extends DeepLTestBase
         $translator->translateText(DeepLTestBase::EXAMPLE_TEXT['de'], null, 'xx');
     }
 
-    public function invalidTextParameters(): array
+    public static function invalidTextParameters(): array
     {
         return [[42], [[42]]];
     }

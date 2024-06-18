@@ -169,8 +169,8 @@ class DocumentMinifier
         if ($filesizeResponse !== false && $filesizeResponse) {
             if ($filesizeResponse > DocumentMinifier::MINIFIED_DOC_SIZE_LIMIT_WARNING) {
                 trigger_error(
-                    'The input file could not be minified below 5 MB, likely a media type is missing. This might cause'
-                    .' translation to fail.',
+                    'The input file could not be minified below 5 MB, likely a media type is unsupported. This might '
+                    .'cause translation to fail.',
                     E_USER_WARNING
                 );
             }

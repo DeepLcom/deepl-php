@@ -7,7 +7,6 @@
 namespace DeepL;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Client\ClientInterface;
 use Ramsey\Uuid\Uuid;
 
 class DeepLTestBase extends TestCase
@@ -68,10 +67,12 @@ class DeepLTestBase extends TestCase
     ];
 
     protected const DOC_MINIFICATION_TEST_FILES_MAPPING = [
-        'example_document_template.docx' => '',
-        'example_presentation_template.pptx' => '',
-        'example_zip_template.zip' => '',
+        'example_document_template.docx' => 'example_document.docx',
+        'example_presentation_template.pptx' => 'example_presentation.pptx',
     ];
+
+    protected const DOC_MINIFICATION_UNSUPPORTED_TEST_TEMPLATE = 'example_zip_template.zip';
+    protected const DOC_MINIFICATION_UNSUPPORTED_TEST_FILE = 'example_zip.zip';
 
     protected const EXAMPLE_DOCUMENT_INPUT = DeepLTestBase::EXAMPLE_TEXT['en'];
     protected const EXAMPLE_DOCUMENT_OUTPUT = DeepLTestBase::EXAMPLE_TEXT['de'];
@@ -248,48 +249,45 @@ class DeepLTestBase extends TestCase
         $this->fail("Expected exception of class '$class' but nothing was thrown");
     }
 
-    public function createDocumentMinificationTestFiles(): void
+    public static function getFullPathForTestFile(string $testFileName): string
+    {
+        return __DIR__ . '/../resources/' . $testFileName;
+    }
+
+    public static function createDocumentMinificationTestFiles(): void
     {
         foreach (DeepLTestBase::DOC_MINIFICATION_TEST_FILES_MAPPING as $templateFilename => $inflatedFilename) {
-            $testDocTemplateFile = __DIR__ . '/../resources/' . $templateFilename;
-            $testDocInflatedFile = __DIR__ . '/../resources/' . $inflatedFilename;
-            $this->inflateTestFileWithLargeImage($testDocTemplateFile, $testDocInflatedFile);
+            $testDocTemplateFile = self::getFullPathForTestFile($templateFilename);
+            $testDocInflatedFile = self::getFullPathForTestFile($inflatedFilename);
+            self::inflateTestFileWithLargeImage($testDocTemplateFile, $testDocInflatedFile);
         }
     }
 
-    public function removeDocumentMinificationTestFiles()
+    public static function removeDocumentMinificationTestFiles()
     {
         foreach (DeepLTestBase::DOC_MINIFICATION_TEST_FILES_MAPPING as $inflatedFileToDelete) {
             unlink($inflatedFileToDelete);
         }
     }
 
-    private function inflateTestFileWithLargeImage(string $inputFile, string $outputFile)
+    protected static function inflateTestFileWithLargeImage(string $inputFile, string $outputFile)
     {
-        $extractionDir = __DIR__ . '/../resources/';
+        $extractionDir = self::getFullPathForTestFile('inflation_tmp_dir');
         if (!mkdir($extractionDir)) {
-            throw new \RuntimeException('Failed creating dir for test files for doc minification');
+            throw new \RuntimeException("Failed creating dir $extractionDir for test files for doc minification");
         }
-        $zip = new \ZipArchive();
-        if ($zip->open($inputFile) === true) {
-            $zip->extractTo($extractionDir);
-            $zip->close();
-        } else {
-            throw new \RuntimeException('Failed inflating test file for doc minification');
-        }
-
-        $inflatedImage = imagecreatetruecolor(18384, 18384);
-        $white = imagecolorallocate($inflatedImage, 255, 255, 255);
-        imagefill($inflatedImage, 0, 0, $white);
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($extractionDir));
-        foreach ($iterator as $file) {
-            if ($file->getExtension() == 'png') {
-                imagepng($inflatedImage, $file->getPathname());
-            }
-        }
-
+        self::extractZipFileTo($inputFile, $extractionDir);
         $zip = new \ZipArchive();
         if ($zip->open($outputFile, \ZipArchive::CREATE) === true) {
+            $fakeImageName = 'placeholder_image.png';
+            $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*()_+=-<,>.?:';
+            $length = 90000000;
+            # str_shuffle is not cryptographically secure, but this is just test data
+            $randomString = substr(str_shuffle(
+                str_repeat($characters, ceil($length/strlen($characters)))
+            ), 1, $length);
+            $zip->addFromString($fakeImageName, $randomString);
+
             $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($extractionDir));
             foreach ($iterator as $file) {
                 if (substr($file, -2) === '/.' || substr($file, -3) === '/..') {
@@ -298,7 +296,6 @@ class DeepLTestBase extends TestCase
                 $file->isDir() ?
                     $zip->addEmptyDir(str_replace($extractionDir . '/', '', $file . '/'))
                     : $zip->addFile($file, str_replace($extractionDir . '/', '', $file));
-                $zip->setCompressionName($file, \ZipArchive::CM_STORE);
             }
             $zip->close();
         } else {
@@ -306,6 +303,61 @@ class DeepLTestBase extends TestCase
         }
 
         DocumentMinifier::recursivelyDeleteDirectory($extractionDir);
+    }
+
+    protected static function extractZipFileTo(string $zipFilePath, string $extractionDirPath): void
+    {
+        if (!is_dir($extractionDirPath)) {
+            mkdir($extractionDirPath);
+        }
+        $zip = new \ZipArchive();
+        if ($zip->open($zipFilePath) === false) {
+            throw new \RuntimeException("Failed opening zip file $zipFilePath");
+        }
+        $zip->extractTo($extractionDirPath);
+        $zip->close();
+    }
+
+    public function assertDirectoriesAreEqual(string $dir1, string $dir2, string $message = ''): void
+    {
+        $dir1Hashes = $this->getDirectoryContentsToHashes($dir1);
+        $dir2Hashes = $this->getDirectoryContentsToHashes($dir2);
+
+        $this->assertAssociativeArraysAreValueEqual($dir1Hashes, $dir2Hashes, $message);
+    }
+
+    protected function assertAssociativeArraysAreValueEqual(array $array1, array $array2, string $message = ''): void
+    {
+        $this->assertEquals(count($array1), count($array2));
+        foreach ($array1 as $key1 => $value1) {
+            if (is_string($value1)) {
+                $this->assertEquals($value1, $array2[$key1], $message);
+            } else {
+                $this->assertAssociativeArraysAreValueEqual($array1[$key1], $array2[$key1], $message);
+            }
+        }
+    }
+
+    protected function getDirectoryContentsToHashes(string $dir): array
+    {
+        $hashes = array();
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+            foreach ($objects as $path) {
+                if ($path !== '.' && $path !== '..') {
+                    $absolutePath = $dir . '/' . $path;
+                    if (is_dir($path)) {
+                        $hashes[$path] = $this->getDirectoryContentsToHashes($absolutePath);
+                    } else {
+                        $hashes[$path] = hash_file('md5', $absolutePath);
+                        if ($hashes[$path] === false) {
+                            throw new \RuntimeException("Failed hashing $absolutePath");
+                        }
+                    }
+                }
+            }
+        }
+        return $hashes;
     }
 
     /**
@@ -324,7 +376,7 @@ class DeepLTestBase extends TestCase
         self::defineFunctionMock(__NAMESPACE__, 'curl_setopt_array');
     }
 
-    public function provideHttpClient()
+    public static function provideHttpClient()
     {
         return [[null], [new \GuzzleHttp\Client()]];
     }

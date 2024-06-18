@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <phpunit colors="true" convertWarningsToExceptions="false">
     <testsuites>
         <testsuite name="deepl-php Test Suite">
@@ -18,4 +17,8 @@
     <logging>
         <junit outputFile="reports/junit.xml" />
     </logging>
+
+    <php>
+        <ini name="memory_limit" value="256M" />
+    </php>
 </phpunit>
