@@ -265,7 +265,6 @@ class DocumentMinifier
     private function exportMediaToMediaDirAndReplace(string $inputDirectory, string $mediaDirectory)
     {
         $imageData = array();
-        $placeholderImage = imagecreatetruecolor(1, 1);
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($inputDirectory));
         foreach ($iterator as $file) {
             if ($file->isFile() && array_key_exists($file->getExtension(), DocumentMinifier::SUPPORTED_MEDIA_FORMATS)) {
@@ -285,15 +284,23 @@ class DocumentMinifier
                         "Exception when backing up document media: Failed to move $curFilePath to $mediaPath."
                     );
                 }
-                if (!imagepng($placeholderImage, $curFilePath)) {
+                if (!$this->storePlaceholderAt($curFilePath)) {
                     throw new DocumentMinificationException(
-                        "Exception when minifying document: Failed to store replacement image at $curFilePath."
+                        "Exception when minifying document: Failed to store replacement data at $curFilePath."
                     );
                 }
             }
         }
-        imagedestroy($placeholderImage);
         return $imageData;
+    }
+
+    private function storePlaceholderAt(string $filename): bool
+    {
+        $putContentsResp = file_put_contents($filename, 'DeepL Media Placeholder');
+        if ($putContentsResp === false) {
+            return false;
+        }
+        return true;
     }
 
     private function replaceImagesInDir(string $directory, string $mediaDirectory)
