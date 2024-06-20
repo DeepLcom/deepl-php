@@ -128,8 +128,7 @@ using the following keys:
 -   `tag_handling`: type of tags to parse before translation, options are `'html'`
     and `'xml'`.
 -   `context`: specifies additional context to influence translations, that is not
-    translated itself. Note this is an **alpha feature**: it may be deprecated at
-    any time, or incur charges if it becomes generally available.
+    translated itself. Characters in the `context` parameter are not counted toward billing.
     See the [API documentation][api-docs-context-param] for more information and
     example usage.
 -   `glossary`: glossary ID of glossary to use for translation.
