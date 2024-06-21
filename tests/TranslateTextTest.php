@@ -282,6 +282,7 @@ class TranslateTextTest extends DeepLTestBase
 
     /**
      * @dataProvider provideHttpClient
+     * @doesNotPerformAssertions
      */
     public function testContext(?ClientInterface $httpClient)
     {
