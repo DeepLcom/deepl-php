@@ -20,6 +20,7 @@ class TranslateTextTest extends DeepLTestBase
             $sourceLang = \DeepL\LanguageCode::removeRegionalVariant($langCode);
             $result = $translator->translateText($exampleText, $sourceLang, 'en-US');
             $this->assertStringContainsStringIgnoringCase('proton', $result->text, "LangCode: $langCode");
+            $this->assertEquals(mb_strlen($exampleText), $result->billedCharacters);
         }
     }
 
@@ -33,8 +34,10 @@ class TranslateTextTest extends DeepLTestBase
         $result = $translator->translateText($input, null, 'de');
         $this->assertEquals(DeepLTestBase::EXAMPLE_TEXT['de'], $result[0]->text);
         $this->assertEquals('fr', $result[0]->detectedSourceLang);
+        $this->assertEquals(mb_strlen($input[0]), $result[0]->billedCharacters);
         $this->assertEquals(DeepLTestBase::EXAMPLE_TEXT['de'], $result[1]->text);
         $this->assertEquals('en', $result[1]->detectedSourceLang);
+        $this->assertEquals(mb_strlen($input[1]), $result[1]->billedCharacters);
     }
 
     /**

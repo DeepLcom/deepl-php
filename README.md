@@ -75,9 +75,10 @@ translation options, see [Text translation options](#text-translation-options)
 below.
 
 `translateText()` returns a `TextResult`, or an array of `TextResult`s
-corresponding to your input text(s). `TextResult` has two properties: `text` is
-the translated text, and `detectedSourceLang` is the detected source language
-code.
+corresponding to your input text(s). `TextResult` has the following properties:
+- `text` is the translated text,
+- `detectedSourceLang` is the detected source language code,
+- `billedCharacters` is the number of characters billed for the text.
 
 ```php
 // Translate text into a target language, in this case, French:
@@ -92,8 +93,10 @@ $translations = $translator->translateText(
 );
 echo $translations[0]->text; // 'How are you?'
 echo $translations[0]->detectedSourceLang; // 'ja'
+echo $translations[0]->billedCharacters;  // 7 - the number of characters in the source text "お元気ですか？"
 echo $translations[1]->text; // 'How are you?'
 echo $translations[1]->detectedSourceLang; // 'es'
+echo $translations[1]->billedCharacters; // 12 - the number of characters in the source text "¿Cómo estás?"
 
 // Translate into German with less and more Formality:
 echo $translator->translateText('How are you?', null, 'de', ['formality' => 'less']); // 'Wie geht es dir?'

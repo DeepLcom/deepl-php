@@ -160,6 +160,8 @@ class Translator
             $options[TranslateTextOptions::FORMALITY] ?? null,
             $options[TranslateTextOptions::GLOSSARY] ?? null
         );
+        // Always send show_billed_characters=1, remove when the API default is changed to true
+        $params["show_billed_characters"] = "1";
         $this->validateAndAppendTexts($params, $texts);
         $this->validateAndAppendTextOptions($params, $options);
 
@@ -187,7 +189,8 @@ class Translator
         foreach ($decoded['translations'] as $textResult) {
             $textField = $textResult['text'];
             $detectedSourceLang = $textResult['detected_source_language'];
-            $textResults[] = new TextResult($textField, $detectedSourceLang);
+            $billedCharacters = $textResult['billed_characters'];
+            $textResults[] = new TextResult($textField, $detectedSourceLang, $billedCharacters);
         }
         return is_array($texts) ? $textResults : $textResults[0];
     }

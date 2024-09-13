@@ -23,12 +23,18 @@ class TextResult
     public $detectedSourceLang;
 
     /**
+     * @var int Number of characters billed for this text.
+     */
+    public $billedCharacters;
+
+    /**
      * @throws DeepLException
      */
-    public function __construct(string $text, string $detectedSourceLang)
+    public function __construct(string $text, string $detectedSourceLang, int $billedCharacters)
     {
         $this->text = $text;
         $this->detectedSourceLang = LanguageCode::standardizeLanguageCode($detectedSourceLang);
+        $this->billedCharacters = $billedCharacters;
     }
 
     public function __toString(): string
