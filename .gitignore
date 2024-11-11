@@ -16,3 +16,4 @@ reports/
 
 # Ignore cached PHPUnit results.
 .phpunit.result.cache
+.phpunit.cache
