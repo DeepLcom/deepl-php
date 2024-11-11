@@ -79,6 +79,8 @@ corresponding to your input text(s). `TextResult` has the following properties:
 - `text` is the translated text,
 - `detectedSourceLang` is the detected source language code,
 - `billedCharacters` is the number of characters billed for the text.
+- `modelTypeUsed` indicates the translation model used, but is `null` unless the
+  `model_type` option is specified.
 
 ```php
 // Translate text into a target language, in this case, French:
@@ -135,6 +137,14 @@ using the following keys:
     See the [API documentation][api-docs-context-param] for more information and
     example usage.
 -   `glossary`: glossary ID of glossary to use for translation.
+-   `model_type`: specifies the type of translation model to use, options are:
+    - `'quality_optimized'`: use a translation model that maximizes translation quality, at
+                             the cost of response time. This option may be unavailable for
+                             some language pairs.
+    - `'prefer_quality_optimized'`: use the highest-quality translation model for the given
+                                    language pair.
+    - `'latency_optimized'`: use a translation model that minimizes response time, at the
+                             cost of translation quality.
 
 The following options are only used if `tag_handling` is `'xml'`:
 

@@ -190,7 +190,8 @@ class Translator
             $textField = $textResult['text'];
             $detectedSourceLang = $textResult['detected_source_language'];
             $billedCharacters = $textResult['billed_characters'];
-            $textResults[] = new TextResult($textField, $detectedSourceLang, $billedCharacters);
+            $modelTypeUsed = $textResult['model_type_used'] ?? null;
+            $textResults[] = new TextResult($textField, $detectedSourceLang, $billedCharacters, $modelTypeUsed);
         }
         return is_array($texts) ? $textResults : $textResults[0];
     }
@@ -268,7 +269,8 @@ class Translator
             $sourceLang,
             $targetLang,
             $options[TranslateDocumentOptions::FORMALITY] ?? null,
-            $options[TranslateDocumentOptions::GLOSSARY] ?? null
+            $options[TranslateDocumentOptions::GLOSSARY] ?? null,
+            null
         );
 
         $response = $this->client->sendRequestWithBackoff(
@@ -670,6 +672,9 @@ class Translator
         }
         if (isset($options[TranslateTextOptions::CONTEXT])) {
             $params[TranslateTextOptions::CONTEXT] = $options[TranslateTextOptions::CONTEXT];
+        }
+        if (isset($options[TranslateTextOptions::MODEL_TYPE])) {
+            $params[TranslateTextOptions::MODEL_TYPE] = $options[TranslateTextOptions::MODEL_TYPE];
         }
         if (isset($options[TranslateTextOptions::NON_SPLITTING_TAGS])) {
             $params[TranslateTextOptions::NON_SPLITTING_TAGS] =

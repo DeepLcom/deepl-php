@@ -64,4 +64,14 @@ class TranslateTextOptions
      *  @see \DeepL\Translator::listGlossaries()
      */
     public const GLOSSARY = 'glossary';
+
+    /** Sets the preferred model type in a text translation request.
+     * - 'quality_optimized': Use translation models that have been optimized for translation quality
+     *                        Please note that using this option will result in an error if the selected
+     *                        or inferred language pair is not supported by the models.
+     * - 'prefer_quality_optimized': Same as above, but will fall back to `latency_optimized` if the
+     *                               language pair is not supported.
+     * - 'latency_optimized': Use translation models that have been optimized for translation speed.
+     */
+    public const MODEL_TYPE = 'model_type';
 }

@@ -39,6 +39,23 @@ class TranslateTextTest extends DeepLTestBase
         $this->assertEquals('en', $result[1]->detectedSourceLang);
         $this->assertEquals(mb_strlen($input[1]), $result[1]->billedCharacters);
     }
+    /**
+     * @dataProvider provideHttpClientAndModelType
+     */
+    public function testModelType(?ClientInterface $httpClient, string $modelTypeArgName, string $expectedModelType)
+    {
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+        $input = [DeepLTestBase::EXAMPLE_TEXT['en']];
+        $result = $translator->translateText(
+            $input,
+            null,
+            'de',
+            [TranslateTextOptions::MODEL_TYPE => $modelTypeArgName]
+        );
+        $this->assertEquals(DeepLTestBase::EXAMPLE_TEXT['de'], $result[0]->text);
+        $this->assertEquals(mb_strlen($input[0]), $result[0]->billedCharacters);
+        $this->assertEquals($expectedModelType, $result[0]->modelTypeUsed);
+    }
 
     /**
      * @dataProvider provideHttpClient

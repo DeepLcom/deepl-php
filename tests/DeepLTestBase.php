@@ -376,8 +376,33 @@ class DeepLTestBase extends TestCase
         self::defineFunctionMock(__NAMESPACE__, 'curl_setopt_array');
     }
 
-    public static function provideHttpClient()
+    public static function provideHttpClient(): array
     {
         return [[null], [new \GuzzleHttp\Client()]];
+    }
+
+    public static function provideModelType(): array
+    {
+        return [
+            ['quality_optimized', 'quality_optimized'],
+            ['latency_optimized', 'latency_optimized'],
+            ['prefer_quality_optimized', 'quality_optimized']
+        ];
+    }
+
+    public static function provideHttpClientAndModelType(): array
+    {
+        return self::dataProviderCartesianProduct(self::provideHttpClient(), self::provideModelType());
+    }
+
+    protected static function dataProviderCartesianProduct(array $providerOutput1, array $providerOutput2): array
+    {
+        $result = [];
+        foreach ($providerOutput1 as $args1) {
+            foreach ($providerOutput2 as $args2) {
+                $result[] = array_merge($args1, $args2);
+            }
+        }
+        return $result;
     }
 }

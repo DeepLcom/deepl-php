@@ -28,13 +28,24 @@ class TextResult
     public $billedCharacters;
 
     /**
+     * @var string Model type used for the translation.
+     * @see TranslateTextOptions::MODEL_TYPE
+     */
+    public $modelTypeUsed;
+
+    /**
      * @throws DeepLException
      */
-    public function __construct(string $text, string $detectedSourceLang, int $billedCharacters)
-    {
+    public function __construct(
+        string $text,
+        string $detectedSourceLang,
+        int $billedCharacters,
+        ?string $modelTypeUsed
+    ) {
         $this->text = $text;
         $this->detectedSourceLang = LanguageCode::standardizeLanguageCode($detectedSourceLang);
         $this->billedCharacters = $billedCharacters;
+        $this->modelTypeUsed = $modelTypeUsed;
     }
 
     public function __toString(): string
