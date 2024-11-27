@@ -28,7 +28,7 @@ class TextResult
     public $billedCharacters;
 
     /**
-     * @var string Model type used for the translation.
+     * @var string|null Model type used for the translation.
      * @see TranslateTextOptions::MODEL_TYPE
      */
     public $modelTypeUsed;
@@ -40,7 +40,7 @@ class TextResult
         string $text,
         string $detectedSourceLang,
         int $billedCharacters,
-        ?string $modelTypeUsed
+        ?string $modelTypeUsed = null
     ) {
         $this->text = $text;
         $this->detectedSourceLang = LanguageCode::standardizeLanguageCode($detectedSourceLang);
