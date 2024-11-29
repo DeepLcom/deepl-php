@@ -5,6 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+### Fixed
+* Fixed the `TextResult` constructor to be compatible with pre-1.10 versions, to
+  facilitate mocking
+  * Thanks to [VincentLanglet](https://github.com/VincentLanglet) for
+    [#56](https://github.com/DeepLcom/deepl-php/pull/56)
+* Fixed a bug when generating the platform information with `php_uname`.
+  * Thanks to [jochensengier](https://github.com/jochensengier) for
+    [#57](https://github.com/DeepLcom/deepl-php/pull/57) and
+    [that-guy-iain](https://github.com/that-guy-iain) +
+    [jimwins](https://github.com/jimwins) for the
+    [report](https://github.com/DeepLcom/deepl-php/issues/54).
+
+
 ## [1.10.0] - 2024-11-15
 ### Added
 * Added `MODEL_TYPE` option to `translateText()` to use models with higher
@@ -169,6 +183,7 @@ Stable release.
 Initial version.
 
 
+[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.10.0...HEAD
 [1.10.0]: https://github.com/DeepLcom/deepl-php/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/DeepLcom/deepl-php/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/DeepLcom/deepl-php/compare/v1.7.2...v1.8.0
