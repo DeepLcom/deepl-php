@@ -763,7 +763,7 @@ class Translator
         $libraryInfoStr = "deepl-php/$libraryVersion";
         try {
             if ($sendPlatformInfo) {
-                $platformStr = php_uname('s r v m');
+                $platformStr = php_uname('s') . ' ' . php_uname('r') . ' ' . php_uname('v') . php_uname('m');
                 $phpVersion = phpversion();
                 $libraryInfoStr .= " ($platformStr) php/$phpVersion";
                 $curlVer = curl_version()['version'];
