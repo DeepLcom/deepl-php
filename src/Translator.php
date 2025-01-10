@@ -22,7 +22,7 @@ class Translator
     /**
      * Implements all HTTP requests and retries.
      */
-    private $client;
+    protected $client;
 
     /**
      * Construct a Translator object wrapping the DeepL API using your authentication key.
@@ -269,8 +269,7 @@ class Translator
             $sourceLang,
             $targetLang,
             $options[TranslateDocumentOptions::FORMALITY] ?? null,
-            $options[TranslateDocumentOptions::GLOSSARY] ?? null,
-            null
+            $options[TranslateDocumentOptions::GLOSSARY] ?? null
         );
 
         $response = $this->client->sendRequestWithBackoff(
@@ -611,7 +610,7 @@ class Translator
      * @param string|string[] $texts User-supplied texts to be checked.
      * @throws DeepLException
      */
-    private function validateAndAppendTexts(array &$params, $texts)
+    protected function validateAndAppendTexts(array &$params, $texts)
     {
         if (is_array($texts)) {
             foreach ($texts as $text) {
@@ -694,7 +693,7 @@ class Translator
      * Checks the HTTP status code, and in case of failure, throws an exception with diagnostic information.
      * @throws DeepLException
      */
-    private function checkStatusCode(array $response, bool $inDocumentDownload = false, bool $usingGlossary = false)
+    protected function checkStatusCode(array $response, bool $inDocumentDownload = false, bool $usingGlossary = false)
     {
         list($statusCode, $content) = $response;
 

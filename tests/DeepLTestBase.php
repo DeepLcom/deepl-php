@@ -182,6 +182,20 @@ class DeepLTestBase extends TestCase
         return new Translator($this->authKey, $mergedOptions);
     }
 
+    public function makeDeeplClient(array $options = []): DeepLClient
+    {
+        $mergedOptions = array_replace(
+            [TranslatorOptions::HEADERS => $this->sessionHeaders()],
+            $options ?? []
+        );
+
+        if ($this->serverUrl !== false) {
+            $mergedOptions[TranslatorOptions::SERVER_URL] = $this->serverUrl;
+        }
+        
+        return new DeepLClient($this->authKey, $mergedOptions);
+    }
+
     public function makeTranslatorWithRandomAuthKey(array $options = []): Translator
     {
         $mergedOptions = array_replace([

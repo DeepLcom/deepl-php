@@ -42,20 +42,20 @@ To continue using this library, you should update to PHP 8.1+.
 
 ## Usage
 
-Construct a `Translator` object. The first argument is a string containing your
+Construct a `DeepLClient` object. The first argument is a string containing your
 API authentication key as found in your [DeepL Pro Account][pro-account].
 
 Be careful not to expose your key, for example when sharing source code.
 
 ```php
 $authKey = "f63c02c5-f056-..."; // Replace with your key
-$translator = new \DeepL\Translator($authKey);
+$deeplClient = new \DeepL\DeepLClient($authKey);
 
-$result = $translator->translateText('Hello, world!', null, 'fr');
+$result = $deeplClient->translateText('Hello, world!', null, 'fr');
 echo $result->text; // Bonjour, le monde!
 ```
 
-`Translator` accepts options as the second argument, see
+`DeepLClient` accepts options as the second argument, see
 [Configuration](#configuration) for more information.
 
 ### Translating text
@@ -84,11 +84,11 @@ corresponding to your input text(s). `TextResult` has the following properties:
 
 ```php
 // Translate text into a target language, in this case, French:
-$translationResult = $translator->translateText('Hello, world!', 'en', 'fr');
+$translationResult = $deeplClient->translateText('Hello, world!', 'en', 'fr');
 echo $translationResult->text; // 'Bonjour, le monde !'
 
 // Translate multiple texts into British English:
-$translations = $translator->translateText(
+$translations = $deeplClient->translateText(
     ['お元気ですか？', '¿Cómo estás?'],
     null,
     'en-GB',
@@ -101,8 +101,8 @@ echo $translations[1]->detectedSourceLang; // 'es'
 echo $translations[1]->billedCharacters; // 12 - the number of characters in the source text "¿Cómo estás?"
 
 // Translate into German with less and more Formality:
-echo $translator->translateText('How are you?', null, 'de', ['formality' => 'less']); // 'Wie geht es dir?'
-echo $translator->translateText('How are you?', null, 'de', ['formality' => 'more']); // 'Wie geht es Ihnen?'
+echo $deeplClient->translateText('How are you?', null, 'de', ['formality' => 'less']); // 'Wie geht es dir?'
+echo $deeplClient->translateText('How are you?', null, 'de', ['formality' => 'more']); // 'Wie geht es Ihnen?'
 ```
 
 #### Text translation options
@@ -162,6 +162,78 @@ The following options are only used if `tag_handling` is `'xml'`:
 The `TranslateTextOptions` class defines constants for the options above, for
 example `TranslateTextOptions::FORMALITY` is defined as `'formality'`.
 
+### Rephrasing text
+
+To rephrase text, call `rephraseText()`. The first argument is a string containing the text you want to rephrase, or an array of strings if you want to rephrase multiple texts.
+
+The second argument is the target language code, which is optional. If not provided, the text will be rephrased in its original language.
+
+The last argument is optional and specifies extra rephrasing options, see [Rephrasing options](#rephrasing-options) below.
+
+`rephraseText()` returns a `RephraseTextResult`, or an array of `RephraseTextResult`s corresponding to your input text(s), similar to `translateText()`.
+
+```php
+// Rephrase a single text:
+$result = $deeplClient->rephraseText('The cat sat on the mat.');
+echo $result->text; // Returns a rephrased version
+
+// Rephrase multiple texts:
+$results = $deeplClient->rephraseText([
+    'The cat sat on the mat.',
+    'The dog chased the ball.'
+]);
+echo $results[0]->text; // First rephrased text
+echo $results[1]->text; // Second rephrased text
+
+// Rephrase with specific style:
+$result = $deeplClient->rephraseText(
+    'The meeting went well.',
+    'en-US',
+    ['writing_style' => 'business']
+);
+
+// Rephrase with specific tone:
+$result = $deeplClient->rephraseText(
+    'We need to discuss this matter.',
+    'en-US',
+    ['tone' => 'diplomatic']
+);
+```
+
+#### Rephrasing options
+
+Provide options to the `rephraseText` function as an associative array, using the following keys:
+
+- `writing_style`: Sets the style for the rephrased text:
+
+  - `'academic'`: Academic writing style
+  - `'business'`: Business writing style
+  - `'casual'`: Casual writing style
+  - `'default'`: Default writing style
+  - `'simple'`: Simple writing style
+  - `'prefer_academic'`: Use academic style if available, otherwise default
+  - `'prefer_business'`: Use business style if available, otherwise default
+  - `'prefer_casual'`: Use casual style if available, otherwise default
+  - `'prefer_simple'`: Use simple style if available, otherwise default
+
+- `tone`: Sets the tone for the rephrased text:
+  - `'confident'`: Confident tone
+  - `'default'`: Default tone
+  - `'diplomatic'`: Diplomatic tone
+  - `'enthusiastic'`: Enthusiastic tone
+  - `'friendly'`: Friendly tone
+  - `'prefer_confident'`: Use confident tone if available, otherwise default
+  - `'prefer_diplomatic'`: Use diplomatic tone if available, otherwise default
+  - `'prefer_enthusiastic'`: Use enthusiastic tone if available, otherwise default
+  - `'prefer_friendly'`: Use friendly tone if available, otherwise default
+
+Note: Currently, you can only specify either a style OR a tone, not both at the same time.
+
+The `DeepLClientOptions` class defines constants for these options:
+
+- `RephraseTextOptions::WRITING_STYLE`
+- `RephraseTextOptions::TONE`
+
 ### Translating documents
 
 To translate documents, call `translateDocument()`. The first and second
@@ -177,7 +249,7 @@ translation options, see
 ```php
 // Translate a formal document from English to German:
 try {
-    $translator->translateDocument(
+    $deeplClient->translateDocument(
         'Instruction Manual.docx',
         'Bedienungsanleitung.docx',
         'en',
@@ -236,7 +308,7 @@ of the document to be translated.
 To use document minification, simply pass the option to the `translateDocument` function:
 
 ```php
-$translator->translateDocument(
+$deeplClient->translateDocument(
     $inFile, $outFile, 'en', 'de', [TranslateDocumentOptions::ENABLE_DOCUMENT_MINIFICATION => true]
 );
 ```
@@ -303,7 +375,7 @@ including the ID, name, languages and entry count.
 ```php
 // Create an English to German glossary with two terms:
 $entries = GlossaryEntries::fromEntries(['artist' => 'Maler', 'prize' => 'Gewinn']);
-$myGlossary = $translator->createGlossary('My glossary', 'en', 'de', $entries);
+$myGlossary = $deeplClient->createGlossary('My glossary', 'en', 'de', $entries);
 echo "Created '$myGlossary->name' ($myGlossary->glossaryId) " .
     "$myGlossary->sourceLang to $myGlossary->targetLang " .
     "containing $myGlossary->entryCount entries";
@@ -318,7 +390,7 @@ as an associative array, specify the CSV data as a string:
 ```php
 // Read CSV data from a file, for example: "artist,Maler,en,de\nprize,Gewinn,en,de"
 $csvData = file_get_contents('/path/to/glossary_file.csv');
-$myCsvGlossary = $translator->createGlossaryFromCsv(
+$myCsvGlossary = $deeplClient->createGlossaryFromCsv(
     'CSV glossary',
     'en',
     'de',
@@ -344,13 +416,13 @@ Functions to get, list, and delete stored glossaries are also provided:
 ```php
 // Retrieve a stored glossary using the ID
 $glossaryId = '559192ed-8e23-...';
-$myGlossary = $translator->getGlossary($glossaryId);
+$myGlossary = $deeplClient->getGlossary($glossaryId);
 
 // Find and delete glossaries named 'Old glossary'
-$glossaries = $translator->listGlossaries();
+$glossaries = $deeplClient->listGlossaries();
 foreach ($glossaries as $glossary) {
     if ($glossary->name === 'Old glossary') {
-        $translator->deleteGlossary($glossary);
+        $deeplClient->deleteGlossary($glossary);
     }
 }
 ```
@@ -366,7 +438,7 @@ ID. A `GlossaryEntries` object is returned; you can access the entries as an
 associative array using `getEntries()`:
 
 ```php
-$entries = $translator->getGlossaryEntries($myGlossary);
+$entries = $deeplClient->getGlossaryEntries($myGlossary);
 print_r($entries->getEntries()); // Array ( [artist] => Maler, [prize] => Gewinn)
 ```
 
@@ -378,11 +450,11 @@ specify the `sourceLang` argument (it is required when using a glossary):
 
 ```php
 $text = 'The artist was awarded a prize.';
-$withGlossary = $translator->translateText($text, 'en', 'de', ['glossary' => $myGlossary]);
+$withGlossary = $deeplClient->translateText($text, 'en', 'de', ['glossary' => $myGlossary]);
 echo $withGlossary->text; // "Der Maler wurde mit einem Gewinn ausgezeichnet."
 
 // For comparison, the result without a glossary:
-$withGlossary = $translator->translateText($text, null, 'de');
+$withoutGlossary = $deeplClient->translateText($text, null, 'de');
 echo $withoutGlossary->text; // "Der Künstler wurde mit einem Preis ausgezeichnet."
 ```
 
@@ -390,7 +462,7 @@ Using a stored glossary for document translation is the same: set the `glossary`
 option. The `sourceLang` argument must also be specified:
 
 ```php
-$translator->translateDocument(
+$deeplClient->translateDocument(
     $inFile, $outFile, 'en', 'de', ['glossary' => $myGlossary]
 )
 ```
@@ -412,7 +484,7 @@ that checks if the usage has reached the limit. The top level `Usage` object has
 the `anyLimitReached()` function to check all usage subtypes.
 
 ```php
-$usage = $translator->getUsage();
+$usage = $deeplClient->getUsage();
 if ($usage->anyLimitReached()) {
     echo 'Translation limit exceeded.';
 }
@@ -426,7 +498,7 @@ if ($usage->document) {
 
 ### Listing available languages
 
-You can request the list of languages supported by DeepL Translator for text and
+You can request the list of languages supported by DeepL API for text and
 documents using the `getSourceLanguages()` and `getTargetLanguages()` functions.
 They both return an array of `Language` objects.
 
@@ -436,12 +508,12 @@ for target languages, and is a `bool` indicating whether the target language
 supports the optional `formality` parameter.
 
 ```php
-$sourceLanguages = $translator->getSourceLanguages();
+$sourceLanguages = $deeplClient->getSourceLanguages();
 foreach ($sourceLanguages as $sourceLanguage) {
     echo $sourceLanguage->name . ' (' . $sourceLanguage->code . ')'; // Example: 'English (en)'
 }
 
-$targetLanguages = $translator->getTargetLanguages();
+$targetLanguages = $deeplClient->getTargetLanguages();
 foreach ($targetLanguages as $targetLanguage) {
     if ($targetLanguage->supportsFormality) {
         echo $targetLanguage->name . ' (' . $targetLanguage->code . ') supports formality';
@@ -458,7 +530,7 @@ of `GlossaryLanguagePair` objects. Each has `sourceLang` and `targetLang`
 properties indicating that that pair of language codes is supported.
 
 ```php
-$glossaryLanguages = $translator->getGlossaryLanguages();
+$glossaryLanguages = $deeplClient->getGlossaryLanguages();
 foreach ($glossaryLanguages as $glossaryLanguage) {
     echo "$glossaryLanguage->sourceLang to $glossaryLanguage->targetLang";
     // Example: "en to de", "de to en", etc.
@@ -475,26 +547,26 @@ target language English (`'en'`) supports translations to both American English
 ### Writing a Plugin
 
 If you use this library in an application, please identify the application with
-the `app_info` TranslatorOption, which needs the name and version of the app:
+the `app_info` DeeplClientOption, which needs the name and version of the app:
 
 ```php
 $options = ['app_info' => new \DeepL\AppInfo('my-custom-php-chat-client', '1.2.3')];
-$translator = new \DeepL\Translator('YOUR_AUTH_KEY', $options);
+$deeplClient = new \DeepL\DeepLClient('YOUR_AUTH_KEY', $options);
 ```
 
 This information is passed along when the library makes calls to the DeepL API.
 Both name and version are required. Please note that setting the `User-Agent` header
-via the `headers` TranslatorOption will override this setting, if you need to use this,
+via the `headers` DeeplClientOption will override this setting, if you need to use this,
 please manually identify your Application in the `User-Agent` header.
 
 ### Configuration
 
-The `Translator` constructor accepts configuration options as a second argument,
+The `DeepLClient` constructor accepts configuration options as a second argument,
 for example:
 
 ```php
 $options = [ 'max_retries' => 5, 'timeout' => 10.0 ];
-$translator = new \DeepL\Translator('YOUR_AUTH_KEY', $options);
+$deeplClient = new \DeepL\DeepLClient('YOUR_AUTH_KEY', $options);
 ```
 
 Provide the options as an associative array with the following keys: 
@@ -514,16 +586,16 @@ Provide the options as an associative array with the following keys:
 - `logger`: specify a [`PSR-3` compatible logger][PSR-3-logger] that the library
     should log messages to.
 
-The `TranslatorOptions` class defines constants for the options above.
+The `DeepLClientOptions` class defines constants for the options above.
 
 #### Proxy configuration
 
 You can configure a proxy using the `proxy` option when constructing a
-`Translator`:
+`DeepLClient`:
 
 ```php
 $proxy = 'http://user:pass@10.10.1.10:3128';
-$translator = new \DeepL\Translator('YOUR_AUTH_KEY', ['proxy' => $proxy]);
+$deeplClient = new \DeepL\DeepLClient('YOUR_AUTH_KEY', ['proxy' => $proxy]);
 ```
 
 The proxy option is used for the `CURLOPT_PROXY` option when preparing the cURL
@@ -531,25 +603,25 @@ request, see the [documentation for cURL][curl-proxy-docs].
 
 #### Logging
 
-To enable logging, specify a [`PSR-3` compatible logger][PSR-3-logger] as the 
-`'logger'` option in the `Translator` configuration options.
+To enable logging, specify a [`PSR-3` compatible logger][PSR-3-logger] as the
+`'logger'` option in the `DeepLClient` configuration options.
 
 #### Anonymous platform information
 
-By default, we send some basic information about the platform the client library is running on with each request, see [here for an explanation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent). This data is completely anonymous and only used to improve our product, not track any individual users. If you do not wish to send this data, you can opt-out when creating your `Translator` object by setting the `send_platform_option` flag in the options like so:
+By default, we send some basic information about the platform the client library is running on with each request, see [here for an explanation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent). This data is completely anonymous and only used to improve our product, not track any individual users. If you do not wish to send this data, you can opt-out when creating your `DeepLClient` object by setting the `send_platform_info` flag in the options like so:
 
 ```php
-$translator = new \DeepL\Translator('YOUR_AUTH_KEY', ['send_platform_info' => false]);
+$deeplClient = new \DeepL\DeepLClient('YOUR_AUTH_KEY', ['send_platform_info' => false]);
 ```
 
-You can also customize the `User-Agent` header completely by setting its value explicitly in the options via the `headers` field (this overrides the `send_platform_option` option). For example::
+You can also customize the `User-Agent` header completely by setting its value explicitly in the options via the `headers` field (this overrides the `send_platform_info` option). For example::
 
 ```php
 $headers = [
     'Authorization' => "DeepL-Auth-Key YOUR_AUTH_KEY",
     'User-Agent' => 'my-custom-php-client',
 ];
-$translator = new \DeepL\Translator('YOUR_AUTH_KEY', ['headers' => $headers]);
+$deeplClient = new \DeepL\DeepLClient('YOUR_AUTH_KEY', ['headers' => $headers]);
 ```
 
 ### Custom HTTP client
@@ -563,15 +635,15 @@ $client = new \GuzzleHttp\Client([
     'read_timeout' => 7.4,
     'proxy' => 'http://localhost:8125'
 ]);
-$translator = new \DeepL\Translator('YOUR_AUTH_KEY', [TranslatorOptions::HTTP_CLIENT => $client]);
-$translator->getUsage(); // Or a translate call, etc
+$deeplClient = new \DeepL\DeepLClient('YOUR_AUTH_KEY', [DeepLClientOptions::HTTP_CLIENT => $client]);
+$deeplClient->getUsage(); // Or a translate call, etc
 ```
 
 ### Request retries
 
 Requests to the DeepL API that fail due to transient conditions (for example,
 network timeouts or high server-load) will be retried. The maximum number of
-retries can be configured when constructing the `Translator` object using the
+retries can be configured when constructing the `DeepLClient` object using the
 `max_retries` option. The timeout for each request attempt may be controlled
 using the `timeout` option. An exponential-backoff strategy is used, so
 requests that fail multiple times will incur delays.
@@ -603,6 +675,14 @@ deepl-mock, run it in another terminal while executing the tests. Execute the
 tests using `phpunit` with the `DEEPL_MOCK_SERVER_PORT` and `DEEPL_SERVER_URL`
 environment variables defined referring to the mock-server.
 
+### Formatting and fixing code
+
+For formatting and fixing code style issues, run this command:
+
+```bash
+./vendor/bin/phpcbf
+./vendor/bin/phpcs
+```
 
 [api-docs]: https://www.deepl.com/docs-api?utm_source=github&utm_medium=github-php-readme
 
