@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [1.11.0] - 2025-01-16
 ### Added
 * Added support for the Write API in the client library, the implementation
   can be found in the `DeepLClient` class. Please refer to the README for usage
@@ -194,7 +194,7 @@ Stable release.
 Initial version.
 
 
-[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.10.1...HEAD
+[1.11.0]: https://github.com/DeepLcom/deepl-php/compare/v1.10.1...v1.11.0
 [1.10.1]: https://github.com/DeepLcom/deepl-php/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/DeepLcom/deepl-php/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/DeepLcom/deepl-php/compare/v1.8.0...v1.9.0

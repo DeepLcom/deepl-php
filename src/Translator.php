@@ -17,7 +17,7 @@ class Translator
     /**
      * Library version.
      */
-    public const VERSION = '1.10.1';
+    public const VERSION = '1.11.0';
 
     /**
      * Implements all HTTP requests and retries.
