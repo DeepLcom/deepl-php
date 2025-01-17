@@ -53,6 +53,19 @@ class RephraseTextTest extends DeepLTestBase
         $this->checkSanityOfImprovements($input, $result);
     }
 
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testConfiguredDeepLClient(?ClientInterface $httpClient)
+    {
+        $deeplClient = $this->makeDeeplClient([
+            DeepLClientOptions::HTTP_CLIENT => $httpClient,
+            DeepLClientOptions::DEFAULT_MAX_RETRIES => 2
+        ]);
+        $result = $deeplClient->rephraseText(DeepLTestBase::EXAMPLE_TEXT['en'], 'en-GB');
+        $this->checkSanityOfImprovements(DeepLTestBase::EXAMPLE_TEXT['en'], $result);
+    }
+
     private function checkSanityOfImprovements(
         string $inputText,
         RephraseTextResult $result,
