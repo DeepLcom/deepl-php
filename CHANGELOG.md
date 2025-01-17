@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.11.1] - 2025-01-17
+### Fixed
+* Fixed `DeepLClientOptions` wrongly inheriting from `TranslateTextOptions`,
+  when it should be `TranslatorOptions`.
+  * Thanks to [VincentLanglet](https://github.com/VincentLanglet) for the
+    [report](https://github.com/DeepLcom/deepl-php/issues/59)
+
+
 ## [1.11.0] - 2025-01-16
 ### Added
 * Added support for the Write API in the client library, the implementation
@@ -194,6 +202,7 @@ Stable release.
 Initial version.
 
 
+[1.11.1]: https://github.com/DeepLcom/deepl-php/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/DeepLcom/deepl-php/compare/v1.10.1...v1.11.0
 [1.10.1]: https://github.com/DeepLcom/deepl-php/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/DeepLcom/deepl-php/compare/v1.9.0...v1.10.0
