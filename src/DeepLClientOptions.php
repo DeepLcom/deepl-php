@@ -6,7 +6,7 @@
 
 namespace DeepL;
 
-class DeepLClientOptions extends TranslateTextOptions
+class DeepLClientOptions extends TranslatorOptions
 {
 
 }
