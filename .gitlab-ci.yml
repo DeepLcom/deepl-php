@@ -1,5 +1,6 @@
 # Note: This GitLab CI configuration is used for internal testing, users can ignore it.
 include:
+  - template: Security/SAST.gitlab-ci.yml
   - project: '${CI_PROJECT_NAMESPACE}/ci-libs-for-client-libraries'
     file:
       - '/${CI_PROJECT_NAME}/.gitlab-ci.yml'
@@ -101,6 +102,16 @@ secret_detection:
     - echo "overriding default before_script..."
   rules:
     - if: $CI_MERGE_REQUEST_ID
+
+semgrep-sast:
+  stage: check
+  before_script:
+    - ''
+  rules:
+    - when: always
+  variables:
+    SAST_EXCLUDED_PATHS: '$DEFAULT_SAST_EXCLUDED_PATHS'
+    GIT_STRATEGY: clone
 
 # stage: test ----------------------
 
