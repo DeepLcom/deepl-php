@@ -8,6 +8,7 @@ include:
     file:
       - '/templates/.buildkit.yml'
       - '/templates/.secret-detection.yml'
+      - '/templates/.gitlab-release.yml'
 
 variables:
   DOCKER_IMAGE_PREFIX: ${HARBOR_REGISTRY}/${HARBOR_REGISTRY_PROJECT}/${CI_PROJECT_NAME}-build
@@ -34,6 +35,7 @@ stages:
   - build
   - check
   - test
+  - publish # Only for internal tracking
 
 before_script:
   # Install project dependencies using Composer
@@ -164,3 +166,11 @@ test_manual:
   extends: .test_base
   rules:
     - if: $CI_PIPELINE_SOURCE != "schedule"
+
+# stage: publish ----------------------
+
+gitlab release:
+  stage: publish
+  extends: .create_gitlab_release
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
