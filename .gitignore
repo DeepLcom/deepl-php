@@ -9,6 +9,9 @@ composer.phar
 # Unit test output directory
 reports/
 
+# Test resources. Some sample files are checked in here, but we exclude files created during tests
+/resources/
+
 # Ignore PHP CS Fixer local config and cache
 .php_cs
 .php_cs.cache

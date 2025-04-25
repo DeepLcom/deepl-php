@@ -46,6 +46,7 @@ class HttpClientWrapper
     public const OPTION_HEADERS = 'headers';
     public const OPTION_PARAMS = 'params';
     public const OPTION_OUTFILE = 'outfile';
+    public const OPTION_JSON = 'json';
 
     public function __construct(
         string           $serverUrl,
@@ -103,8 +104,9 @@ class HttpClientWrapper
             $timeout = max($this->minTimeout, $backoff->getTimeUntilDeadline());
             $response = null;
             $exception = null;
+            $json = isset($options[self::OPTION_JSON]) ? $options[self::OPTION_JSON] : null;
             try {
-                $response = $this->sendRequest($method, $url, $timeout, $headers, $params, $file, $outFile);
+                $response = $this->sendRequest($method, $url, $timeout, $headers, $params, $file, $outFile, $json);
             } catch (ConnectionException $e) {
                 $exception = $e;
             }
@@ -147,6 +149,7 @@ class HttpClientWrapper
      * @param array $params Array of parameters to include in body.
      * @param string|null $filePath If not null, path to file to upload with request.
      * @param resource|null $outFile If not null, file to write output to.
+     * @param string|null $json If not null, JSON content to include in body.
      * @return array Array where the first element is the HTTP status code and the second element is the response body.
      * @throws ConnectionException
      */
@@ -157,12 +160,13 @@ class HttpClientWrapper
         array $headers,
         array $params,
         ?string $filePath,
-        $outFile
+        $outFile,
+        ?string $json
     ): array {
         if ($this->customHttpClient !== null) {
-            return $this->sendCustomHttpRequest($method, $url, $headers, $params, $filePath, $outFile);
+            return $this->sendCustomHttpRequest($method, $url, $headers, $params, $filePath, $outFile, $json);
         } else {
-            return $this->sendCurlRequest($method, $url, $timeout, $headers, $params, $filePath, $outFile);
+            return $this->sendCurlRequest($method, $url, $timeout, $headers, $params, $filePath, $outFile, $json);
         }
     }
 
@@ -192,6 +196,7 @@ class HttpClientWrapper
      * @param array $params Array of parameters to include in body.
      * @param string|null $filePath If not null, path to file to upload with request.
      * @param resource|null $outFile If not null, file to write output to.
+     * @param string|null $json If not null, JSON content to include in body.
      * @return array Array where the first element is the HTTP status code and the second element is the response body.
      * @throws ConnectionException
      */
@@ -201,7 +206,8 @@ class HttpClientWrapper
         array $headers,
         array $params,
         ?string $filePath,
-        $outFile
+        $outFile,
+        ?string $json
     ): array {
         $body = null;
         if ($filePath !== null) {
@@ -218,6 +224,9 @@ class HttpClientWrapper
             $body = $this->streamFactory->createStream(
                 $this->urlEncodeWithRepeatedParams($params)
             );
+        } elseif (isset($json)) {
+            $headers['Content-Type'] = 'application/json';
+            $body = $this->streamFactory->createStream($json);
         } else {
             $body = $this->streamFactory->createStream('');
         }
@@ -245,6 +254,7 @@ class HttpClientWrapper
      * @param array $params Array of parameters to include in body.
      * @param string|null $filePath If not null, path to file to upload with request.
      * @param resource|null $outFile If not null, file to write output to.
+     * @param string|null $json If not null, JSON content to include in body.
      * @return array Array where the first element is the HTTP status code and the second element is the response body.
      * @throws ConnectionException
      */
@@ -255,7 +265,8 @@ class HttpClientWrapper
         array $headers,
         array $params,
         ?string $filePath,
-        $outFile
+        $outFile,
+        ?string $json
     ): array {
         $curlOptions = [];
         $curlOptions[\CURLOPT_HEADER] = false;
@@ -294,6 +305,9 @@ class HttpClientWrapper
             // parameters which is not what we need, so instead we encode the parameters without indexes.
             // This case only occurs if no file is uploaded.
             $curlOptions[\CURLOPT_POSTFIELDS] = $this->urlEncodeWithRepeatedParams($params);
+        } elseif (!is_null($json)) {
+            $curlOptions[\CURLOPT_POSTFIELDS] = $json;
+            $curlOptions[\CURLOPT_HTTPHEADER][] = 'Content-Type: application/json';
         }
 
         if ($outFile) {

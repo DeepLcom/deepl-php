@@ -58,10 +58,15 @@ class TranslateTextOptions
     public const IGNORE_TAGS = 'ignore_tags';
 
     /** Set to string containing a glossary ID to use the glossary for translation.
-     *  Can also be set to a GlossaryInfo as returned by createGlossary, getGlossary or listGlossaries.
+     *  Can also be set to a GlossaryInfo as returned by createGlossary, getGlossary or listGlossaries,
+     *  or a MultilingualGlossaryInfo as returned by createMultilingualGlossary, getMultilingualGlossary or
+     *  listMultilingualGlossaries.
      *  @see \DeepL\Translator::createGlossary()
      *  @see \DeepL\Translator::getGlossary()
      *  @see \DeepL\Translator::listGlossaries()
+     *  @see \DeepL\DeepLClient::createMultilingualGlossary()
+     *  @see \DeepL\DeepLClient::getMultilingualGlossary()
+     *  @see \DeepL\DeepLClient::listMultilingualGlossaries()
      */
     public const GLOSSARY = 'glossary';
 

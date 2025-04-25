@@ -563,7 +563,8 @@ class Translator
      * @param string|null $sourceLang Source language code, or null to use auto-detection.
      * @param string $targetLang Target language code.
      * @param string|null $formality Formality option, or null if not specified.
-     * @param string|GlossaryInfo|null $glossary Glossary ID, GlossaryInfo, or null if not specified.
+     * @param string|GlossaryInfo|MultilingualGlossaryInfo|null $glossary Glossary ID, GlossaryInfo,
+     *  MultilingualGlossaryInfo, or null if not specified.
      * @return array Associative array of HTTP parameters.
      * @throws DeepLException
      */

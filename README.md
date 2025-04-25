@@ -357,45 +357,64 @@ Glossaries allow you to customize your translations using user-defined terms.
 Multiple glossaries can be stored with your account, each with a user-specified
 name and a uniquely-assigned ID.
 
+### v2 versus v3 glossary APIs
+
+The newest version of the glossary APIs are the `/v3` endpoints, allowing both
+editing functionality plus support for multilingual glossaries. New methods and
+objects have been created to support interacting with these new glossaries.
+Due to this new functionality, users are recommended to utilize these
+multilingual glossary methods. However, to continue using the `v2` glossary API
+endpoints, please continue to use the existing endpoints in the `Translator.php`
+(e.g. `createGlossary()`, `getGlossary()`, etc).
+
+To migrate to use the new multilingual glossary methods from the current
+monolingual glossary methods, please refer to
+[this migration guide](upgrade_to_multilingual_glossaries.md).
+
+The following sections describe how to interact with multilingual glossaries
+using the new functionality:
+
 #### Creating a glossary
 
 You can create a glossary with your desired terms and name using
-`createGlossary()`. Each glossary applies to a single source-target language
-pair. Note: Glossaries are only supported for some language pairs, see
+`createMultilingualGlossary()`. ach glossary contains a list of dictionaries, where each dictionary applies to a single source-target language pair. Note: Glossaries are only supported for some language pairs, see
 [Listing available glossary languages](#listing-available-glossary-languages)
 for more information. The entries should be specified as a `GlossaryEntries`
 object; you can create one using `GlossaryEntries::fromEntries` using an
 associative array with the source terms as keys and the target terms as values.
 
-Then use `createGlossary()` with the glossary name, source and target language
-codes and the `GlossaryEntries`. If successful, the glossary is created and
-stored with your DeepL account, and a `GlossaryInfo` object is returned
+Then use `createMultilingualGlossary()` with the glossary name, and its list of
+dictionaries. Each dictionary should have source and target language codes and 
+the `GlossaryEntries`. If successful, the glossary is created and stored with 
+your DeepL account, and a `MultilingualGlossaryInfo` object is returned
 including the ID, name, languages and entry count.
 
 ```php
 // Create an English to German glossary with two terms:
 $entries = GlossaryEntries::fromEntries(['artist' => 'Maler', 'prize' => 'Gewinn']);
-$myGlossary = $deeplClient->createGlossary('My glossary', 'en', 'de', $entries);
+$myGlossaryDict = new MultilingualGlossaryDictionaryEntries('en', 'de', $entries);
+$myGlossary = $deeplClient->createMultilingualGlossary('My glossary', [$myGlossaryDict]);
 echo "Created '$myGlossary->name' ($myGlossary->glossaryId) " .
-    "$myGlossary->sourceLang to $myGlossary->targetLang " .
-    "containing $myGlossary->entryCount entries";
-// Example: Created 'My glossary' (559192ed-8e23-...) en to de containing 2 entries
+    "with a dictionary from $myGlossary->dictionaries[0]->sourceLang to " .
+    "$myGlossary->dictionaries[0]->targetLang containing " .
+    "$myGlossary->dictionaries[0]->entryCount entries";
+// Example: Created 'My glossary' (559192ed-8e23-...) with a dictionary from en to de containing 2 entries
 ```
 
 You can also upload a glossary downloaded from the DeepL website using
-`createGlossaryFromCsv()`. Similar to `createGlossary`, specify the glossary
-name, and source and target language codes, but instead of specifying the terms
+`createMultilingualGlossaryFromCsv()`. Specify the glossary
+name, and source and target language codes, and instead of specifying the terms
 as an associative array, specify the CSV data as a string:
 
 ```php
 // Read CSV data from a file, for example: "artist,Maler,en,de\nprize,Gewinn,en,de"
 $csvData = file_get_contents('/path/to/glossary_file.csv');
-$myCsvGlossary = $deeplClient->createGlossaryFromCsv(
+$myCsvGlossary = $deeplClient->createMultilingualGlossaryFromCsv(
     'CSV glossary',
     'en',
     'de',
     $csvData,
-)
+);
 ```
 
 The [API documentation][api-docs-csv-format] explains the expected CSV format in
@@ -405,48 +424,100 @@ detail.
 
 Functions to get, list, and delete stored glossaries are also provided:
 
-- `getGlossary()` takes a glossary ID and returns a `GlossaryInfo` object for a
-  stored glossary, or raises an exception if no such glossary is found.
-- `listGlossaries()` returns a list of `GlossaryInfo` objects corresponding to
-  all of your stored glossaries.
-- `deleteGlossary()` takes a glossary ID or `GlossaryInfo` object and deletes
-  the stored glossary from the server, or raises an exception if no such
-  glossary is found.
+- `getMultilingualGlossary()` takes a glossary ID and returns a 
+  `MultilingualGlossaryInfo` object for a stored glossary, or raises an
+  exception if no such glossary is found.
+- `listMultilingualGlossaries()` returns a list of `MultilingualGlossaryInfo`
+  objects corresponding to all of your stored glossaries.
+- `deleteMultilingualGlossary()` takes a glossary ID or 
+  `MultilingualGlossaryInfo` object and deletes the stored glossary from the
+  server, or raises an exception if no such glossary is found.
+- `deleteMultilingualGlossaryDictionary()` takes a glossary ID or
+  `MultilingualGlossaryInfo` object to identify the glossary. Additionally
+  takes in a source and target language or a
+  `MultilingualGlossaryDictionaryInfo` object and deletes the stored dictionary
+  from the server, or raises an exception if no such glossary dictionary is
+  found.
 
 ```php
 // Retrieve a stored glossary using the ID
 $glossaryId = '559192ed-8e23-...';
-$myGlossary = $deeplClient->getGlossary($glossaryId);
+$myGlossary = $deeplClient->getMultilingualGlossary($glossaryId);
+
+$deeplClient->deleteMultilingualGlossaryDictionary($glossaryId, $myGlossary->dictionaries[0]);
 
 // Find and delete glossaries named 'Old glossary'
-$glossaries = $deeplClient->listGlossaries();
+$glossaries = $deeplClient->listMultilingualGlossaries();
 foreach ($glossaries as $glossary) {
     if ($glossary->name === 'Old glossary') {
-        $deeplClient->deleteGlossary($glossary);
+        $deeplClient->deleteMultilingualGlossary($glossary);
     }
 }
 ```
 
 #### Listing entries in a stored glossary
 
-The `GlossaryInfo` object does not contain the glossary entries, but instead
-only the number of entries in the `entryCount` property.
+The `MultilingualGlossaryDictionaryInfo` object does not contain the glossary 
+entries, but instead only the number of entries in the `entryCount` property.
 
 To list the entries contained within a stored glossary, use
-`getGlossaryEntries()` providing either the `GlossaryInfo` object or glossary
-ID. A `GlossaryEntries` object is returned; you can access the entries as an
-associative array using `getEntries()`:
+`getMultilingualGlossaryEntries()` providing either the 
+`MultilingualGlossaryInfo` object or glossary ID and either a 
+`MultilingualGlossaryDictionaryInfo` or source and target language pair:
 
 ```php
-$entries = $deeplClient->getGlossaryEntries($myGlossary);
-print_r($entries->getEntries()); // Array ( [artist] => Maler, [prize] => Gewinn)
+$glossaryDicts = $deeplClient->getMultilingualGlossaryEntries($myGlossary, "en", "de");
+print_r($glossaryDicts[0]->getEntries()); // Array ( [artist] => Maler, [prize] => Gewinn)
+```
+
+#### Editing a glossary
+
+Functions to edit stored glossaries are also provided:
+
+- `updateMultilingualGlossary()` takes a glossary ID or 
+  `MultilingualGlossaryInfo` object, and optionally an array of 
+  `MultilingualGlossaryDictionaryEntries` to update or add to glossary and/or a
+  new name for the glossary. For a given glossary dictionary, it will then 
+  either update the list of entries for that dictionary (either inserting new 
+  entries or replacing the target phrase for any existing entries) or will 
+  insert a new glossary dictionary if that language pair is not currently in 
+  the stored glossary.
+- `replaceMultilingualGlossaryDictionary()` takes a glossary ID or 
+  `MultilingualGlossaryInfo` object, plus a 
+  `MultilingualGlossaryDictionaryEntries` object representing the updated
+  glossary dictionary. It will then either set the dictionary to whatever was
+  passed in as a parameter, completely replacing any pre-existing entries for 
+  that language pair.
+
+```php
+// Update glossary
+$entries = GlossaryEntries::fromEntries(['artist' => 'Maler', 'hello' => 'guten tag']);
+$myGlossaryDict = new MultilingualGlossaryDictionaryEntries('en', 'de', $entries);
+$myGlossary = $deeplClient->createMultilingualGlossary('My glossary', [$myGlossaryDict]);
+
+$newEntries = GlossaryEntries::fromEntries(['hello' => 'hallo', 'prize' => 'Gewinn']);
+$myUpdatedGlossaryDict = new MultilingualGlossaryDictionaryEntries('en', 'de', $newEntries);
+$myUpdatedGlossary = $deeplClient->updateMultilingualGlossary(
+    $myGlossary, 'My updated glossary', [$myUpdatedGlossaryDict]);
+print_r($myUpdatedGlossary->dictionaries[0]->getEntries()); // Array ( [artist] => Maler, [hello] => hallo, [prize] => Gewinn)
+
+// Replace glossary dictionary
+$entries = GlossaryEntries::fromEntries(['artist' => 'Maler', 'hello' => 'guten tag']);
+$myGlossaryDict = new MultilingualGlossaryDictionaryEntries('en', 'de', $entries);
+$myGlossary = $deeplClient->createMultilingualGlossary('My glossary', [$myGlossaryDict]);
+
+$newEntries = GlossaryEntries::fromEntries(['hello' => 'hallo', 'prize' => 'Gewinn']);
+$myUpdatedGlossaryDictEntries = new MultilingualGlossaryDictionaryEntries('en', 'de', $newEntries);
+$myNewGlossaryDict = $deeplClient->replaceMultilingualGlossaryDictionary(
+    $myGlossary, $myUpdatedGlossaryDict);
+print_r($myNewGlossaryDict->entries->getEntries()); // Array ( [hello] => hallo, [prize] => Gewinn)
 ```
 
 #### Using a stored glossary
 
 You can use a stored glossary for text translation by setting the `glossary`
-option to either the glossary ID or `GlossaryInfo` object. You must also
-specify the `sourceLang` argument (it is required when using a glossary):
+option to either the glossary ID or `MultilingualGlossaryInfo` object. You must
+also specify the `sourceLang` argument (it is required when using a glossary):
 
 ```php
 $text = 'The artist was awarded a prize.';

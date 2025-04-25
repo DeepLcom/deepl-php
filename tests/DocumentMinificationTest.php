@@ -16,6 +16,7 @@ class DocumentMinificationTest extends DeepLTestBase
 
     public static function setUpBeforeClass(): void
     {
+        ini_set('memory_limit', 512*1024*1024);
         parent::setUpBeforeClass();
         self::$unsupportedTestFile = self::getFullPathForTestFile(
             DeepLTestBase::DOC_MINIFICATION_UNSUPPORTED_TEST_FILE

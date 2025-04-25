@@ -287,8 +287,10 @@ class DeepLTestBase extends TestCase
     protected static function inflateTestFileWithLargeImage(string $inputFile, string $outputFile)
     {
         $extractionDir = self::getFullPathForTestFile('inflation_tmp_dir');
-        if (!mkdir($extractionDir)) {
-            throw new \RuntimeException("Failed creating dir $extractionDir for test files for doc minification");
+        if (!is_dir($extractionDir)) {
+            if (!mkdir($extractionDir)) {
+                throw new \RuntimeException("Failed creating dir $extractionDir for test files for doc minification");
+            }
         }
         self::extractZipFileTo($inputFile, $extractionDir);
         $zip = new \ZipArchive();
