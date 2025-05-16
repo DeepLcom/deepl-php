@@ -152,7 +152,7 @@ print_r($myUpdatedGlossary->name); // 'My updated glossary'
   $myUpdatedGlossaryDict = new MultilingualGlossaryDictionaryEntries('en', 'de', $newEntries);
   $myUpdatedGlossary = $deeplClient->replaceMultilingualGlossaryDictionary(
       $myGlossary, $myUpdatedGlossaryDict);
-  print_r($myUpdatedGlossary->getEntries()); // Array ( [artist] => Maler, [hello] => hallo, [prize] => Gewinn)
+  print_r($myUpdatedGlossary->getEntries()); // Array ( [hello] => hallo, [prize] => Gewinn)
   ```
 
 ### Delete a Multilingual Glossary Dictionary
