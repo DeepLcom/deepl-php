@@ -6,3 +6,4 @@
 /license_checker.sh export-ignore
 /phpcs.xml export-ignore
 /phpunit.xml export-ignore
+/catalog-info.yaml export-ignore
