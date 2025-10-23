@@ -27,4 +27,11 @@ final class TranslateDocumentOptions
 
     /** Set to `true` in order to use Document Minification for translation, if available. */
     public const ENABLE_DOCUMENT_MINIFICATION = 'enable_document_minification';
+
+    /** Dictionary of extra parameters to pass in the body of the HTTP request.
+     * Can be used to access beta features, override built-in parameters, or for testing purposes.
+     * Keys in this array will be added to the request body and can override existing keys.
+     * Values must be of string type.
+     */
+    public const EXTRA_BODY_PARAMETERS = 'extra_body_parameters';
 }

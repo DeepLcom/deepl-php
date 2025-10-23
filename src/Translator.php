@@ -272,6 +272,11 @@ class Translator
             $options[TranslateDocumentOptions::GLOSSARY] ?? null
         );
 
+        $this->applyExtraBodyParameters(
+            $params,
+            $options[TranslateDocumentOptions::EXTRA_BODY_PARAMETERS] ?? null
+        );
+
         $response = $this->client->sendRequestWithBackoff(
             'POST',
             '/v2/document',
@@ -687,6 +692,23 @@ class Translator
         if (isset($options[TranslateTextOptions::IGNORE_TAGS])) {
             $params[TranslateTextOptions::IGNORE_TAGS] =
                 $this->joinTagList($options[TranslateTextOptions::IGNORE_TAGS]);
+        }
+        $this->applyExtraBodyParameters(
+            $params,
+            $options[TranslateTextOptions::EXTRA_BODY_PARAMETERS] ?? null
+        );
+    }
+
+    /**
+     * Adds extra body parameters to the params array. Extra parameters can override existing keys.
+     * Values are converted to strings.
+     */
+    private function applyExtraBodyParameters(array &$params, ?array $extraParams): void
+    {
+        if ($extraParams !== null) {
+            foreach ($extraParams as $key => $value) {
+                $params[$key] = (string)$value;
+            }
         }
     }
 

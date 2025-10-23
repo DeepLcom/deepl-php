@@ -395,4 +395,24 @@ class TranslateTextTest extends DeepLTestBase
         $this->assertStringContainsString('<h1>Meine erste Überschrift</h1>', $result->text);
         $this->assertStringContainsString('<p translate="no">My first paragraph.</p>', $result->text);
     }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testExtraBodyParams(?ClientInterface $httpClient)
+    {
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+
+        $extra = ['target_lang' => 'FR', 'debug' => '1'];
+        $result = $translator->translateText(
+            DeepLTestBase::EXAMPLE_TEXT['en'],
+            null,
+            'de',
+            [TranslateTextOptions::EXTRA_BODY_PARAMETERS => $extra]
+        );
+
+        $this->assertEquals(DeepLTestBase::EXAMPLE_TEXT['fr'], $result->text);
+        $this->assertEquals('en', $result->detectedSourceLang);
+        $this->assertEquals(mb_strlen(DeepLTestBase::EXAMPLE_TEXT['en']), $result->billedCharacters);
+    }
 }

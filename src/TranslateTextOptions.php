@@ -79,4 +79,11 @@ class TranslateTextOptions
      * - 'latency_optimized': Use translation models that have been optimized for translation speed.
      */
     public const MODEL_TYPE = 'model_type';
+
+    /** Dictionary of extra parameters to pass in the body of the HTTP request.
+     * Can be used to access beta features, override built-in parameters, or for testing purposes.
+     * Keys in this array will be added to the request body and can override existing keys.
+     * Values must be of string type.
+     */
+    public const EXTRA_BODY_PARAMETERS = 'extra_body_parameters';
 }
