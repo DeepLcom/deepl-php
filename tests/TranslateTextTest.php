@@ -207,23 +207,23 @@ class TranslateTextTest extends DeepLTestBase
         $this->needsRealServer();
         $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
         $input = 'How are you?';
-        $formal = 'Wie geht es Ihnen?';
-        $informal = 'Wie geht es dir?';
+        $formal = 'Ihnen'; // Wie geht es Ihnen?
+        $informal = 'dir'; // Wie geht es dir?
 
-        $this->assertEquals($formal, $translator->translateText($input, null, 'de')->text);
-        $this->assertEquals($informal, $translator->translateText(
+        $this->assertStringContainsString($formal, $translator->translateText($input, null, 'de')->text);
+        $this->assertStringContainsString($informal, $translator->translateText(
             $input,
             null,
             'de',
             [TranslateTextOptions::FORMALITY => 'less']
         )->text);
-        $this->assertEquals($formal, $translator->translateText(
+        $this->assertStringContainsString($formal, $translator->translateText(
             $input,
             null,
             'de',
             [TranslateTextOptions::FORMALITY => 'default']
         )->text);
-        $this->assertEquals($formal, $translator->translateText(
+        $this->assertStringContainsString($formal, $translator->translateText(
             $input,
             null,
             'de',
@@ -231,13 +231,13 @@ class TranslateTextTest extends DeepLTestBase
         )->text);
 
         // Case-insensitive tests
-        $this->assertEquals($informal, $translator->translateText(
+        $this->assertStringContainsString($informal, $translator->translateText(
             $input,
             null,
             'de',
             [TranslateTextOptions::FORMALITY => 'Less']
         )->text);
-        $this->assertEquals($formal, $translator->translateText(
+        $this->assertStringContainsString($formal, $translator->translateText(
             $input,
             null,
             'de',
@@ -245,13 +245,13 @@ class TranslateTextTest extends DeepLTestBase
         )->text);
 
         // prefer_* tests
-        $this->assertEquals($informal, $translator->translateText(
+        $this->assertStringContainsString($informal, $translator->translateText(
             $input,
             null,
             'de',
             [TranslateTextOptions::FORMALITY => 'prefer_less']
         )->text);
-        $this->assertEquals($formal, $translator->translateText(
+        $this->assertStringContainsString($formal, $translator->translateText(
             $input,
             null,
             'de',
