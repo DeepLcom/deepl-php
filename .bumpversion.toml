@@ -1,0 +1,19 @@
+# Configuration file for bumpversion
+# See https://github.com/callowayproject/bump-my-version
+[tool.bumpversion]
+current_version = "1.12.0"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+tag = false
+allow_dirty = false
+commit = false
+
+[[tool.bumpversion.files]]
+filename = "src/Translator.php"
+
+[[tool.bumpversion.files]]
+filename = "VERSION"
