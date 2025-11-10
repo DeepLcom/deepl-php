@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.14.0] - 2025-11-12
+### Added
+- Added support for the `GET /v3/style_rules` endpoint in the client library, the
+  implementation can be found in the `DeepLClient` class. Please refer to the
+  README for usage instructions
+- Added `style_id` option to `translateText()` which allows text translation with
+  style rules.
+- Added new model classes: `StyleRuleInfo`, `ConfiguredRules`, and `CustomInstruction`
+  to support style rules functionality.
+
+## [1.13.0] - 2025-04-25
 ### Added
 - Added `extraRequestParameters` option to text and document translation methods to pass arbitrary parameters in the request body. This can be used to access beta features or override built-in parameters (such as `target_lang`, `source_lang`, etc.).
 
@@ -199,7 +211,9 @@ Stable release.
 ## [0.1.0] - 2022-04-22
 Initial version.
 
-[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.12.0...HEAD
+[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.14.0...HEAD
+[1.14.0]: https://github.com/DeepLcom/deepl-php/compare/v1.13.0...v1.14.0
+[1.13.0]: https://github.com/DeepLcom/deepl-php/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/DeepLcom/deepl-php/compare/v1.11.1...v1.12.0
 [1.11.1]: https://github.com/DeepLcom/deepl-php/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/DeepLcom/deepl-php/compare/v1.10.1...v1.11.0
