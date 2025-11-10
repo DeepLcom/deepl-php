@@ -86,4 +86,10 @@ class TranslateTextOptions
      * Values must be of string type.
      */
     public const EXTRA_BODY_PARAMETERS = 'extra_body_parameters';
+
+    /** Set to string containing a style rule ID to use the style rule for translation.
+     *  Can also be set to a StyleRuleInfo as returned by getAllStyleRules.
+     *  @see \DeepL\DeepLClient::getAllStyleRules()
+     */
+    public const STYLE_ID = 'style_id';
 }

@@ -331,4 +331,40 @@ class DeepLClient extends Translator
 
         return $params;
     }
+
+    /**
+     * Retrieves a list of StyleRuleInfo for all available style rules.
+     * @param int|null $page Page number for pagination, 0-indexed (optional).
+     * @param int|null $pageSize Number of items per page (optional).
+     * @param bool|null $detailed Whether to include detailed configuration rules (optional).
+     * @return StyleRuleInfo[] List of StyleRuleInfo objects for all available style rules.
+     * @throws DeepLException
+     */
+    public function getAllStyleRules(
+        ?int $page = null,
+        ?int $pageSize = null,
+        ?bool $detailed = null
+    ): array {
+        $params = [];
+        if ($page !== null) {
+            $params['page'] = (string)$page;
+        }
+        if ($pageSize !== null) {
+            $params['page_size'] = (string)$pageSize;
+        }
+        if ($detailed !== null) {
+            $params['detailed'] = $detailed ? 'true' : 'false';
+        }
+
+        $queryString = '';
+        if (!empty($params)) {
+            $queryString = '?' . http_build_query($params);
+        }
+
+        $response = $this->client->sendRequestWithBackoff('GET', "/v3/style_rules$queryString");
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+
+        return StyleRuleInfo::parseList($content);
+    }
 }

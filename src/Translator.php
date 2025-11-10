@@ -693,6 +693,16 @@ class Translator
             $params[TranslateTextOptions::IGNORE_TAGS] =
                 $this->joinTagList($options[TranslateTextOptions::IGNORE_TAGS]);
         }
+        if (isset($options[TranslateTextOptions::STYLE_ID])) {
+            $styleRule = $options[TranslateTextOptions::STYLE_ID];
+            if (is_string($styleRule)) {
+                $params['style_id'] = $styleRule;
+            } elseif ($styleRule instanceof StyleRuleInfo) {
+                $params['style_id'] = $styleRule->styleId;
+            } else {
+                throw new DeepLException('style_id must be a string or StyleRuleInfo object');
+            }
+        }
         $this->applyExtraBodyParameters(
             $params,
             $options[TranslateTextOptions::EXTRA_BODY_PARAMETERS] ?? null

@@ -137,6 +137,8 @@ using the following keys:
     See the [API documentation][api-docs-context-param] for more information and
     example usage.
 -   `glossary`: glossary ID of glossary to use for translation.
+-   `style_id`: specifies a style rule to use with translation, either as a string
+    containing the ID of the style rule, or a `StyleRuleInfo` object.
 -   `model_type`: specifies the type of translation model to use, options are:
     - `'quality_optimized'`: use a translation model that maximizes translation quality, at
                              the cost of response time. This option may be unavailable for
@@ -614,6 +616,66 @@ You can also find the list of supported glossary language pairs in the
 Note that glossaries work for all target regional-variants: a glossary for the
 target language English (`'en'`) supports translations to both American English
 (`'en-US'`) and British English (`'en-GB'`).
+
+### Style Rules
+
+Style rules allow you to customize your translations using a managed, shared list
+of rules for style, formatting, and more. Multiple style rules can be stored with
+your account, each with a user-specified name and a uniquely-assigned ID.
+
+#### Creating and managing style rules
+
+Currently style rules must be created and managed in the DeepL UI via
+https://www.deepl.com/en/custom-rules. Full CRUD functionality via the APIs will
+come shortly.
+
+#### Listing all style rules
+
+`getAllStyleRules()` returns a list of `StyleRuleInfo` objects
+corresponding to all of your stored style rules. The method accepts optional
+parameters: `page` (page number for pagination, 0-indexed), `pageSize` (number
+of items per page), and `detailed` (whether to include detailed configuration
+rules in the `configuredRules` property).
+
+```php
+// Get all style rules
+$styleRules = $deeplClient->getAllStyleRules();
+foreach ($styleRules as $rule) {
+    echo "{$rule->name} ({$rule->styleId})\n";
+}
+
+// Get style rules with detailed configuration
+$styleRulesDetailed = $deeplClient->getAllStyleRules(detailed: true);
+foreach ($styleRulesDetailed as $rule) {
+    if ($rule->configuredRules && $rule->configuredRules->numbers) {
+        echo "  Number formatting: " . implode(", ", array_keys($rule->configuredRules->numbers)) . "\n";
+    }
+}
+```
+
+#### Using a stored style rule
+
+You can use a stored style rule for text translation by setting the `style_id`
+option to either the style rule ID or a `StyleRuleInfo` object:
+
+```php
+// Using a style rule ID
+$result = $deeplClient->translateText(
+    'Hello, world!',
+    'en',
+    'de',
+    ['style_id' => 'dca2e053-8ae5-45e6-a0d2-881156e7f4e4']
+);
+
+// Using a StyleRuleInfo object
+$styleRules = $deeplClient->getAllStyleRules();
+$result = $deeplClient->translateText(
+    'Hello, world!',
+    'en',
+    'de',
+    ['style_id' => $styleRules[0]]
+);
+```
 
 ### Writing a Plugin
 
