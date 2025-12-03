@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.15.0] - 2025-12-03
+### Added
+- Added `custom_instructions` parameter to `translateText()` to customize translation
+  behavior with up to 10 instructions (max 300 characters each). Only supported for
+  target languages: `de`, `en`, `es`, `fr`, `it`, `ja`, `ko`, `zh` and their variants.
+  Note: using the `custom_instructions` parameter will use the `quality_optimized`
+  model type as the default. Requests combining `custom_instructions` and the
+  `latency_optimized` model type will be rejected.
+
 ## [1.14.0] - 2025-11-12
 ### Added
 - Added support for the `GET /v3/style_rules` endpoint in the client library, the
@@ -211,7 +220,8 @@ Stable release.
 ## [0.1.0] - 2022-04-22
 Initial version.
 
-[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.14.0...HEAD
+[Unreleased]: https://github.com/DeepLcom/deepl-php/compare/v1.15.0...HEAD
+[1.15.0]: https://github.com/DeepLcom/deepl-php/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/DeepLcom/deepl-php/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/DeepLcom/deepl-php/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/DeepLcom/deepl-php/compare/v1.11.1...v1.12.0
