@@ -136,6 +136,13 @@ using the following keys:
     translated itself. Characters in the `context` parameter are not counted toward billing.
     See the [API documentation][api-docs-context-param] for more information and
     example usage.
+-   `custom_instructions`: an array of instructions to customize the translation behavior.
+    Up to 10 custom instructions can be specified, each with a maximum of 300 characters.
+    Important: The target language must be `de`, `en`, `es`, `fr`, `it`, `ja`, `ko`, `zh`
+    or any variants of these languages.
+    Note: Any request with the `custom_instructions` parameter enabled will use the
+    `quality_optimized` model type as the default. Requests combining
+    `custom_instructions` and `model_type: latency_optimized` will be rejected.
 -   `glossary`: glossary ID of glossary to use for translation.
 -   `style_id`: specifies a style rule to use with translation, either as a string
     containing the ID of the style rule, or a `StyleRuleInfo` object.

@@ -703,6 +703,9 @@ class Translator
                 throw new DeepLException('style_id must be a string or StyleRuleInfo object');
             }
         }
+        if (isset($options[TranslateTextOptions::CUSTOM_INSTRUCTIONS])) {
+            $params[TranslateTextOptions::CUSTOM_INSTRUCTIONS] = $options[TranslateTextOptions::CUSTOM_INSTRUCTIONS];
+        }
         $this->applyExtraBodyParameters(
             $params,
             $options[TranslateTextOptions::EXTRA_BODY_PARAMETERS] ?? null

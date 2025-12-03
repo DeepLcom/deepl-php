@@ -415,4 +415,21 @@ class TranslateTextTest extends DeepLTestBase
         $this->assertEquals('en', $result->detectedSourceLang);
         $this->assertEquals(mb_strlen(DeepLTestBase::EXAMPLE_TEXT['en']), $result->billedCharacters);
     }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testCustomInstructions(?ClientInterface $httpClient)
+    {
+        $this->needsRealServer();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+        $input = "I am testing if custom instructions are working correctly.";
+        $customInstructions = ['Use informal language', 'Be concise'];
+        $resultWithCustomInstructions = $translator->translateText($input, null, 'de', [
+            TranslateTextOptions::CUSTOM_INSTRUCTIONS => $customInstructions
+        ]);
+
+        $resultWithoutCustomInstructions = $translator->translateText($input, null, 'de');
+        $this->assertNotEquals($resultWithoutCustomInstructions->text, $resultWithCustomInstructions->text);
+    }
 }

@@ -92,4 +92,12 @@ class TranslateTextOptions
      *  @see \DeepL\DeepLClient::getAllStyleRules()
      */
     public const STYLE_ID = 'style_id';
+
+    /** Array of custom instructions to customize text translation behavior. Maximum 10 elements, each max
+     * 300 characters. Only supported for target languages: `de`, `en`, `es`, `fr`, `it`, `ja`, `ko`, `zh`
+     * and their variants. Note: using the `custom_instructions` parameter will use the `quality_optimized`
+     * model type as the default. Requests combining `custom_instructions` and the `latency_optimized`
+     * model type will be rejected.
+     */
+    public const CUSTOM_INSTRUCTIONS = 'custom_instructions';
 }
