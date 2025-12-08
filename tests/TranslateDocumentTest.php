@@ -55,6 +55,7 @@ class TranslateDocumentTest extends DeepLTestBase
      */
     public function testTranslateLargeDocument(?ClientInterface $httpClient)
     {
+        $this->needsMockServer();
         list(, , $exampleLargeDocument, $outputDocumentPath) = $this->tempFiles();
 
         $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
