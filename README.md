@@ -132,6 +132,9 @@ using the following keys:
     - `'prefer_more'`: use formal, more polite language if available, otherwise default.
 -   `tag_handling`: type of tags to parse before translation, options are `'html'`
     and `'xml'`.
+-   `tag_handling_version`: specifies which version of the tag handling algorithm to use.
+    Options are `v1` and `v2`. This parameter is only relevant when `tag_handling` is set to
+    `'html'` or `'xml'`.
 -   `context`: specifies additional context to influence translations, that is not
     translated itself. Characters in the `context` parameter are not counted toward billing.
     See the [API documentation][api-docs-context-param] for more information and

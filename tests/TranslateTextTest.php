@@ -100,6 +100,32 @@ class TranslateTextTest extends DeepLTestBase
     /**
      * @dataProvider provideHttpClient
      */
+    public function testTagHandlingVersion(?ClientInterface $httpClient)
+    {
+        $this->needsRealServer();
+        $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+        $text = '<p>Hello world</p>';
+
+        $resultV1 = $translator->translateText($text, 'en', 'de', [
+            TranslateTextOptions::TAG_HANDLING => 'html',
+            TranslateTextOptions::TAG_HANDLING_VERSION => 'v1',
+        ]);
+        $this->assertInstanceOf(TextResult::class, $resultV1);
+        $this->assertNotNull($resultV1->text);
+        $this->assertNotEmpty($resultV1->text);
+
+        $resultV2 = $translator->translateText($text, 'en', 'de', [
+            TranslateTextOptions::TAG_HANDLING => 'html',
+            TranslateTextOptions::TAG_HANDLING_VERSION => 'v2',
+        ]);
+        $this->assertInstanceOf(TextResult::class, $resultV2);
+        $this->assertNotNull($resultV2->text);
+        $this->assertNotEmpty($resultV2->text);
+    }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
     public function testLangCodeMixedCase(?ClientInterface $httpClient)
     {
         $translator = $this->makeTranslator([TranslatorOptions::HTTP_CLIENT => $httpClient]);

@@ -671,6 +671,9 @@ class Translator
         if (isset($options[TranslateTextOptions::TAG_HANDLING])) {
             $params[TranslateTextOptions::TAG_HANDLING] = $options[TranslateTextOptions::TAG_HANDLING];
         }
+        if (isset($options[TranslateTextOptions::TAG_HANDLING_VERSION])) {
+            $params[TranslateTextOptions::TAG_HANDLING_VERSION] = $options[TranslateTextOptions::TAG_HANDLING_VERSION];
+        }
         if (isset($options[TranslateTextOptions::OUTLINE_DETECTION])) {
             $params[TranslateTextOptions::OUTLINE_DETECTION] =
                 $this->toBoolString($options[TranslateTextOptions::OUTLINE_DETECTION]);

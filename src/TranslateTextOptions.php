@@ -45,6 +45,9 @@ class TranslateTextOptions
     /** Type of tags to parse before translation, options are 'html' and 'xml'. */
     public const TAG_HANDLING = 'tag_handling';
 
+    /** Version of tag handling algorithm to use, options are 'v1' and 'v2'. */
+    public const TAG_HANDLING_VERSION = 'tag_handling_version';
+
     /** Set to false to disable automatic tag detection, default is true. */
     public const OUTLINE_DETECTION = 'outline_detection';
 
