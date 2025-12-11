@@ -197,7 +197,7 @@ class DocumentMinifier
         if (is_dir($mediaDir)) {
             if (!mkdir($extractedDocDirectory)) {
                 throw new DocumentDeminificationException(
-              "Exception when deminifying, could not create directory at $extractedDocDirectory."
+                    "Exception when deminifying, could not create directory at $extractedDocDirectory."
                 );
             }
 
