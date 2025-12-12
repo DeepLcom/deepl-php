@@ -248,7 +248,7 @@ class DocumentMinifier
             }
         }
         $zip = new \ZipArchive();
-        $openResult = $zip->open($zippedDocumentPath);
+        $openResult = $zip->open($zippedDocumentPath, \ZipArchive::CREATE);
         if ($openResult !== true) {
             throw new $exceptionClass(
                 "Exception when extracting document: Failed to open $zippedDocumentPath as a ZIP file."
