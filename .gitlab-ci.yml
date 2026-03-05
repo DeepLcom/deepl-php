@@ -52,6 +52,8 @@ build image:
     BUILDKIT_EXTRA_ARGS: "--opt build-arg:PHP_VERSION=${PHP_VERSION}"
   parallel:
     matrix:
+      - PHP_VERSION: "8.5-alpine"
+      - PHP_VERSION: "8.4-alpine"
       - PHP_VERSION: "8.3-alpine"
       - PHP_VERSION: "8.2-alpine"
       - PHP_VERSION: "8.1-alpine"
@@ -124,6 +126,10 @@ semgrep-sast:
   parallel:
     matrix:
       - PHP_VERSION: "8.3-alpine"
+      - PHP_VERSION: "8.5-alpine"
+        USE_MOCK_SERVER: "use mock server"
+      - PHP_VERSION: "8.4-alpine"
+        USE_MOCK_SERVER: "use mock server"
       - PHP_VERSION: "8.3-alpine"
         USE_MOCK_SERVER: "use mock server"
       - PHP_VERSION: "8.2-alpine"
