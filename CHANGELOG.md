@@ -5,10 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added PHP 8.4 and 8.5 to CI test matrix.
+
 ### Changed
 - Updated `testModelType()` to just check if the `model_type_used` is populated if the `model_type` is specified in the request
 - Updated `testMixedDirectionText()` to add a missing `</p>` tag
 - Improved `NotFoundException` error message by removing the misleading "check server_url" suggestion.
+
+### Fixed
+- Skip `curl_close` call for PHP 8+.
 
 ## [1.16.0] - 2025-12-10
 ### Added
