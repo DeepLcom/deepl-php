@@ -73,7 +73,9 @@ class HttpClientWrapper
     public function __destruct()
     {
         if ($this->customHttpClient === null) {
-            \curl_close($this->curlHandle);
+            if (PHP_VERSION_ID < 80000) {
+                \curl_close($this->curlHandle);
+            }
         }
     }
 
