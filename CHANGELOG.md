@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added new language constants from January 2026 API release of 81 new languages.
 - Added PHP 8.4 and 8.5 to CI test matrix.
 
 ### Changed
