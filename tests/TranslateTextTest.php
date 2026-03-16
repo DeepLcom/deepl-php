@@ -236,19 +236,27 @@ class TranslateTextTest extends DeepLTestBase
         $formal = 'Ihnen'; // Wie geht es Ihnen?
         $informal = 'dir'; // Wie geht es dir?
 
-        $this->assertStringContainsString($formal, $translator->translateText($input, null, 'de')->text);
+        // Default formality is automatic, so the output may be either formal or informal
+        $defaultResult = $translator->translateText($input, null, 'de')->text;
+        $this->assertTrue(
+            str_contains($defaultResult, $formal) || str_contains($defaultResult, $informal),
+            "Expected default formality result to contain either '$formal' or '$informal', got: $defaultResult"
+        );
         $this->assertStringContainsString($informal, $translator->translateText(
             $input,
             null,
             'de',
             [TranslateTextOptions::FORMALITY => 'less']
         )->text);
-        $this->assertStringContainsString($formal, $translator->translateText(
+        $defaultExplicitResult = $translator->translateText(
             $input,
             null,
             'de',
             [TranslateTextOptions::FORMALITY => 'default']
-        )->text);
+        )->text;
+        $this->assertTrue(
+            str_contains($defaultExplicitResult, $formal) || str_contains($defaultExplicitResult, $informal)
+        );
         $this->assertStringContainsString($formal, $translator->translateText(
             $input,
             null,
