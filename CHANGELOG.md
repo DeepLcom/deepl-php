@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added PHP 8.4 and 8.5 to CI test matrix.
 
 ### Changed
+- Updated formality tests to accept either formal or informal output when using default formality,
+  since the default formality is automatic.
 - Updated `testModelType()` to just check if the `model_type_used` is populated if the `model_type` is specified in the request
 - Updated `testMixedDirectionText()` to add a missing `</p>` tag
 - Improved `NotFoundException` error message by removing the misleading "check server_url" suggestion.
