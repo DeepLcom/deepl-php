@@ -633,11 +633,34 @@ Style rules allow you to customize your translations using a managed, shared lis
 of rules for style, formatting, and more. Multiple style rules can be stored with
 your account, each with a user-specified name and a uniquely-assigned ID.
 
-#### Creating and managing style rules
+#### Creating a style rule
 
-Currently style rules must be created and managed in the DeepL UI via
-https://www.deepl.com/en/custom-rules. Full CRUD functionality via the APIs will
-come shortly.
+Use `createStyleRule()` to create a new style rule with a name and language.
+You can optionally pass configured rules and custom instructions:
+
+```php
+// Create a basic style rule
+$styleRule = $deeplClient->createStyleRule('My Style', 'en');
+echo "Created: {$styleRule->name} ({$styleRule->styleId})\n";
+
+// Create with configured rules and custom instructions
+$styleRule = $deeplClient->createStyleRule(
+    'Formal English',
+    'en',
+    ['style_and_tone' => ['formal_informal' => 'formal']],
+    [['label' => 'Formality', 'prompt' => 'Always use formal language']]
+);
+```
+
+#### Getting a style rule
+
+Use `getStyleRule()` to retrieve a single style rule by its ID or a
+`StyleRuleInfo` object:
+
+```php
+$styleRule = $deeplClient->getStyleRule('dca2e053-8ae5-45e6-a0d2-881156e7f4e4');
+echo "{$styleRule->name} ({$styleRule->language})\n";
+```
 
 #### Listing all style rules
 
@@ -661,6 +684,60 @@ foreach ($styleRulesDetailed as $rule) {
         echo "  Number formatting: " . implode(", ", array_keys($rule->configuredRules->numbers)) . "\n";
     }
 }
+```
+
+#### Updating a style rule
+
+Use `updateStyleRuleName()` to rename a style rule, and
+`updateStyleRuleConfiguredRules()` to replace the configured rules:
+
+```php
+// Update the name
+$updated = $deeplClient->updateStyleRuleName($styleRule, 'New Name');
+
+// Replace configured rules
+$updated = $deeplClient->updateStyleRuleConfiguredRules($styleRule, [
+    'style_and_tone' => ['formal_informal' => 'informal'],
+    'punctuation' => ['oxford_comma' => 'always'],
+]);
+```
+
+#### Deleting a style rule
+
+Use `deleteStyleRule()` to delete a style rule:
+
+```php
+$deeplClient->deleteStyleRule($styleRule);
+```
+
+#### Managing custom instructions
+
+Custom instructions allow you to add free-text prompts to a style rule. Use the
+custom instruction methods to create, get, update, and delete them:
+
+```php
+// Create a custom instruction
+$instruction = $deeplClient->createStyleRuleCustomInstruction(
+    $styleRule,
+    'Formality',
+    'Always use formal language',
+    'de' // optional source language
+);
+echo "Instruction ID: {$instruction->id}\n";
+
+// Get a custom instruction
+$instruction = $deeplClient->getStyleRuleCustomInstruction($styleRule, $instruction->id);
+
+// Update a custom instruction
+$updated = $deeplClient->updateStyleRuleCustomInstruction(
+    $styleRule,
+    $instruction->id,
+    'Updated Label',
+    'Use very formal language'
+);
+
+// Delete a custom instruction
+$deeplClient->deleteStyleRuleCustomInstruction($styleRule, $instruction->id);
 ```
 
 #### Using a stored style rule

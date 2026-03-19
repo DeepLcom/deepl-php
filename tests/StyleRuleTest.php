@@ -89,4 +89,180 @@ class StyleRuleTest extends DeepLTestBase
 
         $this->assertNotNull($result);
     }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testStyleRuleValidation(?ClientInterface $httpClient)
+    {
+        $client = $this->makeDeeplClient([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+
+        // createStyleRule
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->createStyleRule('', 'en');
+        });
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->createStyleRule('Test', '');
+        });
+
+        // getStyleRule
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->getStyleRule('');
+        });
+
+        // updateStyleRuleName
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->updateStyleRuleName('', 'New Name');
+        });
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->updateStyleRuleName('some-id', '');
+        });
+
+        // deleteStyleRule
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->deleteStyleRule('');
+        });
+
+        // updateStyleRuleConfiguredRules
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->updateStyleRuleConfiguredRules('', []);
+        });
+
+        // createStyleRuleCustomInstruction
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->createStyleRuleCustomInstruction('', 'L', 'P');
+        });
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->createStyleRuleCustomInstruction('some-id', '', 'P');
+        });
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->createStyleRuleCustomInstruction('some-id', 'L', '');
+        });
+
+        // getStyleRuleCustomInstruction
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->getStyleRuleCustomInstruction('', 'instr-id');
+        });
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->getStyleRuleCustomInstruction('some-id', '');
+        });
+
+        // updateStyleRuleCustomInstruction
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->updateStyleRuleCustomInstruction('', 'instr-id', 'L', 'P');
+        });
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->updateStyleRuleCustomInstruction('some-id', '', 'L', 'P');
+        });
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->updateStyleRuleCustomInstruction('some-id', 'instr-id', '', 'P');
+        });
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->updateStyleRuleCustomInstruction('some-id', 'instr-id', 'L', '');
+        });
+
+        // deleteStyleRuleCustomInstruction
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->deleteStyleRuleCustomInstruction('', 'instr-id');
+        });
+        $this->assertExceptionClass(DeepLException::class, function () use ($client) {
+            $client->deleteStyleRuleCustomInstruction('some-id', '');
+        });
+    }
+
+    /**
+     * @dataProvider provideHttpClient
+     */
+    public function testStyleRuleCrud(?ClientInterface $httpClient)
+    {
+        $client = $this->makeDeeplClient([TranslatorOptions::HTTP_CLIENT => $httpClient]);
+
+        // Create a style rule with configuredRules and customInstructions
+        $configuredRulesParam = [
+            'dates_and_times' => ['calendar_era' => 'use_bc_and_ad'],
+        ];
+        $customInstructionsParam = [
+            ['label' => 'Init Instruction', 'prompt' => 'Be concise'],
+        ];
+        $createdWithParams = $client->createStyleRule(
+            'Test Style Rule With Params',
+            'en',
+            $configuredRulesParam,
+            $customInstructionsParam
+        );
+        $this->assertNotNull($createdWithParams->styleId);
+        $this->assertEquals('Test Style Rule With Params', $createdWithParams->name);
+        $client->deleteStyleRule($createdWithParams);
+
+        // Create a style rule
+        $created = $client->createStyleRule('Test Style Rule', 'en');
+        $this->assertNotNull($created->styleId);
+        $this->assertEquals('Test Style Rule', $created->name);
+        $this->assertEquals('en', $created->language);
+
+        // Get the style rule
+        $fetched = $client->getStyleRule($created->styleId);
+        $this->assertEquals($created->styleId, $fetched->styleId);
+        $this->assertEquals('Test Style Rule', $fetched->name);
+
+        // Get using StyleRuleInfo object
+        $fetchedByObject = $client->getStyleRule($created);
+        $this->assertEquals($created->styleId, $fetchedByObject->styleId);
+
+        // Update style rule name
+        $updated = $client->updateStyleRuleName($created, 'Updated Style Rule');
+        $this->assertEquals($created->styleId, $updated->styleId);
+        $this->assertEquals('Updated Style Rule', $updated->name);
+
+        // Update configured rules
+        $configuredRules = [
+            'dates_and_times' => ['calendar_era' => 'use_bc_and_ad'],
+        ];
+        $updatedRules = $client->updateStyleRuleConfiguredRules($created, $configuredRules);
+        $this->assertEquals($created->styleId, $updatedRules->styleId);
+
+        // Create a custom instruction with sourceLanguage
+        $instructionWithLang = $client->createStyleRuleCustomInstruction(
+            $created,
+            'Test Instruction With Lang',
+            'Always use formal language',
+            'de'
+        );
+        $this->assertNotNull($instructionWithLang->id);
+        $this->assertEquals('Test Instruction With Lang', $instructionWithLang->label);
+        $client->deleteStyleRuleCustomInstruction($created, $instructionWithLang->id);
+
+        // Create a custom instruction
+        $instruction = $client->createStyleRuleCustomInstruction(
+            $created,
+            'Test Instruction',
+            'Always use formal language'
+        );
+        $this->assertNotNull($instruction->id);
+        $this->assertEquals('Test Instruction', $instruction->label);
+        $this->assertEquals('Always use formal language', $instruction->prompt);
+
+        // Get the custom instruction
+        $fetchedInstruction = $client->getStyleRuleCustomInstruction($created, $instruction->id);
+        $this->assertEquals($instruction->id, $fetchedInstruction->id);
+        $this->assertEquals('Test Instruction', $fetchedInstruction->label);
+
+        // Update the custom instruction with sourceLanguage
+        $updatedInstruction = $client->updateStyleRuleCustomInstruction(
+            $created,
+            $instruction->id,
+            'Updated Instruction',
+            'Use very formal language',
+            'de'
+        );
+        $this->assertEquals($instruction->id, $updatedInstruction->id);
+        $this->assertEquals('Updated Instruction', $updatedInstruction->label);
+        $this->assertEquals('Use very formal language', $updatedInstruction->prompt);
+
+        // Delete the custom instruction
+        $client->deleteStyleRuleCustomInstruction($created, $instruction->id);
+
+        // Delete the style rule
+        $client->deleteStyleRule($created);
+    }
 }

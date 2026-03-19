@@ -367,4 +367,314 @@ class DeepLClient extends Translator
 
         return StyleRuleInfo::parseList($content);
     }
+
+    /**
+     * Creates a new style rule on DeepL server.
+     * @param string $name User-defined name to assign to the style rule.
+     * @param string $language Language code for the style rule.
+     * @param array|null $configuredRules Optional configured rules to apply.
+     * @param array|null $customInstructions Optional custom instructions to include.
+     * @return StyleRuleInfo Details about the created style rule.
+     * @throws DeepLException
+     */
+    public function createStyleRule(
+        string $name,
+        string $language,
+        ?array $configuredRules = null,
+        ?array $customInstructions = null
+    ): StyleRuleInfo {
+        if (strlen($name) === 0) {
+            throw new DeepLException('name must be a non-empty string');
+        }
+        if (strlen($language) === 0) {
+            throw new DeepLException('language must be a non-empty string');
+        }
+
+        $params = [
+            'name' => $name,
+            'language' => $language,
+        ];
+        if ($configuredRules !== null) {
+            $params['configured_rules'] = empty($configuredRules) ? (object)$configuredRules : $configuredRules;
+        }
+        if ($customInstructions !== null) {
+            $params['custom_instructions'] = $customInstructions;
+        }
+
+        $response = $this->client->sendRequestWithBackoff(
+            'POST',
+            '/v3/style_rules',
+            [HttpClientWrapper::OPTION_JSON => json_encode($params)]
+        );
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+        return StyleRuleInfo::fromJson($json);
+    }
+
+    /**
+     * Gets information about an existing style rule.
+     * @param string|StyleRuleInfo $styleRule Style rule ID or StyleRuleInfo of style rule to retrieve.
+     * @return StyleRuleInfo StyleRuleInfo containing details about the style rule.
+     * @throws DeepLException
+     * @throws NotFoundException If the style rule is not found.
+     */
+    public function getStyleRule($styleRule): StyleRuleInfo
+    {
+        $styleId = StyleRuleInfo::getStyleId($styleRule);
+        if (strlen($styleId) === 0) {
+            throw new DeepLException('styleId must be a non-empty string');
+        }
+        $response = $this->client->sendRequestWithBackoff('GET', "/v3/style_rules/" . rawurlencode($styleId));
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+        return StyleRuleInfo::fromJson($json);
+    }
+
+    /**
+     * Updates the name of an existing style rule.
+     * @param string|StyleRuleInfo $styleRule Style rule ID or StyleRuleInfo of style rule to update.
+     * @param string $name New name for the style rule.
+     * @return StyleRuleInfo Updated StyleRuleInfo.
+     * @throws DeepLException
+     * @throws NotFoundException If the style rule is not found.
+     */
+    public function updateStyleRuleName($styleRule, string $name): StyleRuleInfo
+    {
+        $styleId = StyleRuleInfo::getStyleId($styleRule);
+        if (strlen($styleId) === 0) {
+            throw new DeepLException('styleId must be a non-empty string');
+        }
+        if (strlen($name) === 0) {
+            throw new DeepLException('name must be a non-empty string');
+        }
+        $params = ['name' => $name];
+
+        $response = $this->client->sendRequestWithBackoff(
+            'PATCH',
+            "/v3/style_rules/" . rawurlencode($styleId),
+            [HttpClientWrapper::OPTION_JSON => json_encode($params)]
+        );
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+        return StyleRuleInfo::fromJson($json);
+    }
+
+    /**
+     * Deletes the style rule with the given style rule ID or StyleRuleInfo.
+     * @param string|StyleRuleInfo $styleRule Style rule ID or StyleRuleInfo of style rule to delete.
+     * @throws DeepLException
+     * @throws NotFoundException If the style rule is not found.
+     */
+    public function deleteStyleRule($styleRule): void
+    {
+        $styleId = StyleRuleInfo::getStyleId($styleRule);
+        if (strlen($styleId) === 0) {
+            throw new DeepLException('styleId must be a non-empty string');
+        }
+        $response = $this->client->sendRequestWithBackoff('DELETE', "/v3/style_rules/" . rawurlencode($styleId));
+        $this->checkStatusCode($response);
+    }
+
+    /**
+     * Replaces the configured rules for a style rule.
+     * @param string|StyleRuleInfo $styleRule Style rule ID or StyleRuleInfo of style rule to update.
+     * @param array $configuredRules The new configured rules to set.
+     * @return StyleRuleInfo Updated StyleRuleInfo.
+     * @throws DeepLException
+     * @throws NotFoundException If the style rule is not found.
+     */
+    public function updateStyleRuleConfiguredRules($styleRule, array $configuredRules): StyleRuleInfo
+    {
+        $styleId = StyleRuleInfo::getStyleId($styleRule);
+        if (strlen($styleId) === 0) {
+            throw new DeepLException('styleId must be a non-empty string');
+        }
+        $params = empty($configuredRules) ? (object)$configuredRules : $configuredRules;
+
+        $response = $this->client->sendRequestWithBackoff(
+            'PUT',
+            "/v3/style_rules/" . rawurlencode($styleId) . "/configured_rules",
+            [HttpClientWrapper::OPTION_JSON => json_encode($params)]
+        );
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+        return StyleRuleInfo::fromJson($json);
+    }
+
+    /**
+     * Creates a custom instruction for a style rule.
+     * @param string|StyleRuleInfo $styleRule Style rule ID or StyleRuleInfo of style rule.
+     * @param string $label Label for the custom instruction.
+     * @param string $prompt Prompt text for the custom instruction.
+     * @param string|null $sourceLanguage Optional source language code.
+     * @return CustomInstruction The created custom instruction.
+     * @throws DeepLException
+     * @throws NotFoundException If the style rule is not found.
+     */
+    public function createStyleRuleCustomInstruction(
+        $styleRule,
+        string $label,
+        string $prompt,
+        ?string $sourceLanguage = null
+    ): CustomInstruction {
+        $styleId = StyleRuleInfo::getStyleId($styleRule);
+        if (strlen($styleId) === 0) {
+            throw new DeepLException('styleId must be a non-empty string');
+        }
+        if (strlen($label) === 0) {
+            throw new DeepLException('label must be a non-empty string');
+        }
+        if (strlen($prompt) === 0) {
+            throw new DeepLException('prompt must be a non-empty string');
+        }
+        $params = [
+            'label' => $label,
+            'prompt' => $prompt,
+        ];
+        if ($sourceLanguage !== null) {
+            $params['source_language'] = $sourceLanguage;
+        }
+
+        $response = $this->client->sendRequestWithBackoff(
+            'POST',
+            "/v3/style_rules/" . rawurlencode($styleId) . "/custom_instructions",
+            [HttpClientWrapper::OPTION_JSON => json_encode($params)]
+        );
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+        return CustomInstruction::fromJson($json);
+    }
+
+    /**
+     * Gets a custom instruction for a style rule.
+     * @param string|StyleRuleInfo $styleRule Style rule ID or StyleRuleInfo of style rule.
+     * @param string $instructionId ID of the custom instruction to retrieve.
+     * @return CustomInstruction The custom instruction.
+     * @throws DeepLException
+     * @throws NotFoundException If the style rule or custom instruction is not found.
+     */
+    public function getStyleRuleCustomInstruction($styleRule, string $instructionId): CustomInstruction
+    {
+        $styleId = StyleRuleInfo::getStyleId($styleRule);
+        if (strlen($styleId) === 0) {
+            throw new DeepLException('styleId must be a non-empty string');
+        }
+        if (strlen($instructionId) === 0) {
+            throw new DeepLException('instructionId must be a non-empty string');
+        }
+        $response = $this->client->sendRequestWithBackoff(
+            'GET',
+            "/v3/style_rules/" . rawurlencode($styleId) . "/custom_instructions/" . rawurlencode($instructionId)
+        );
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+        return CustomInstruction::fromJson($json);
+    }
+
+    /**
+     * Updates a custom instruction for a style rule.
+     * @param string|StyleRuleInfo $styleRule Style rule ID or StyleRuleInfo of style rule.
+     * @param string $instructionId ID of the custom instruction to update.
+     * @param string $label New label for the custom instruction.
+     * @param string $prompt New prompt text for the custom instruction.
+     * @param string|null $sourceLanguage Optional source language code.
+     * @return CustomInstruction The updated custom instruction.
+     * @throws DeepLException
+     * @throws NotFoundException If the style rule or custom instruction is not found.
+     */
+    public function updateStyleRuleCustomInstruction(
+        $styleRule,
+        string $instructionId,
+        string $label,
+        string $prompt,
+        ?string $sourceLanguage = null
+    ): CustomInstruction {
+        $styleId = StyleRuleInfo::getStyleId($styleRule);
+        if (strlen($styleId) === 0) {
+            throw new DeepLException('styleId must be a non-empty string');
+        }
+        if (strlen($instructionId) === 0) {
+            throw new DeepLException('instructionId must be a non-empty string');
+        }
+        if (strlen($label) === 0) {
+            throw new DeepLException('label must be a non-empty string');
+        }
+        if (strlen($prompt) === 0) {
+            throw new DeepLException('prompt must be a non-empty string');
+        }
+        $params = [
+            'label' => $label,
+            'prompt' => $prompt,
+        ];
+        if ($sourceLanguage !== null) {
+            $params['source_language'] = $sourceLanguage;
+        }
+
+        $response = $this->client->sendRequestWithBackoff(
+            'PUT',
+            "/v3/style_rules/" . rawurlencode($styleId) . "/custom_instructions/" . rawurlencode($instructionId),
+            [HttpClientWrapper::OPTION_JSON => json_encode($params)]
+        );
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+        try {
+            $json = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new InvalidContentException($exception);
+        }
+        return CustomInstruction::fromJson($json);
+    }
+
+    /**
+     * Deletes a custom instruction from a style rule.
+     * @param string|StyleRuleInfo $styleRule Style rule ID or StyleRuleInfo of style rule.
+     * @param string $instructionId ID of the custom instruction to delete.
+     * @throws DeepLException
+     * @throws NotFoundException If the style rule or custom instruction is not found.
+     */
+    public function deleteStyleRuleCustomInstruction($styleRule, string $instructionId): void
+    {
+        $styleId = StyleRuleInfo::getStyleId($styleRule);
+        if (strlen($styleId) === 0) {
+            throw new DeepLException('styleId must be a non-empty string');
+        }
+        if (strlen($instructionId) === 0) {
+            throw new DeepLException('instructionId must be a non-empty string');
+        }
+        $response = $this->client->sendRequestWithBackoff(
+            'DELETE',
+            "/v3/style_rules/" . rawurlencode($styleId) . "/custom_instructions/" . rawurlencode($instructionId)
+        );
+        $this->checkStatusCode($response);
+    }
 }
