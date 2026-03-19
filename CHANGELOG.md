@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added new language constants from January 2026 API release of 81 new languages.
 - Added PHP 8.4 and 8.5 to CI test matrix.
+- Added support for style rules CRUD endpoints in the `DeepLClient` class:
+  `createStyleRule()`, `getStyleRule()`, `updateStyleRuleName()`,
+  `updateStyleRuleConfiguredRules()`, and `deleteStyleRule()`.
+- Added support for style rule custom instruction CRUD endpoints in the
+  `DeepLClient` class: `createStyleRuleCustomInstruction()`,
+  `getStyleRuleCustomInstruction()`, `updateStyleRuleCustomInstruction()`,
+  and `deleteStyleRuleCustomInstruction()`.
+  Please refer to the README for usage instructions.
 
 ### Changed
 - Updated formality tests to accept either formal or informal output when using default formality,
