@@ -178,6 +178,7 @@ test_manual:
 gitlab release:
   stage: publish
   extends: .create_gitlab_release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
   before_script:
       - echo "overriding default before_script..."  
   rules:
