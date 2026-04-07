@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added support for translation memories in text translation via
+  `TranslateTextOptions::TRANSLATION_MEMORY_ID` and
+  `TranslateTextOptions::TRANSLATION_MEMORY_THRESHOLD`.
+- Added `listTranslationMemories()` method to the `DeepLClient` class for
+  listing available translation memories.
+- Added new model class `TranslationMemoryInfo` to represent translation memory data.
+
 ### Fixed
 - Set explicit image for `gitlab release` CI job to avoid missing `$HOME` issues.
 
