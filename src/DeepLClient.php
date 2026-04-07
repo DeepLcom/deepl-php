@@ -677,4 +677,31 @@ class DeepLClient extends Translator
         );
         $this->checkStatusCode($response);
     }
+
+    /**
+     * Retrieves a list of available translation memories. The maximum number of translation memories
+     * returned is controlled by pageSize (max 25).
+     * @param int|null $page Page number for pagination, 0-indexed (optional).
+     * @param int|null $pageSize Number of items per page (optional).
+     * @return TranslationMemoryInfo[] List of TranslationMemoryInfo objects for all available translation memories.
+     * @throws DeepLException
+     */
+    public function listTranslationMemories(
+        ?int $page = null,
+        ?int $pageSize = null
+    ): array {
+        $queryParams = [];
+        if ($page !== null) {
+            $queryParams['page'] = $page;
+        }
+        if ($pageSize !== null) {
+            $queryParams['page_size'] = $pageSize;
+        }
+        $queryString = empty($queryParams) ? '' : '?' . http_build_query($queryParams);
+
+        $response = $this->client->sendRequestWithBackoff('GET', "/v3/translation_memories$queryString");
+        $this->checkStatusCode($response);
+        list(, $content) = $response;
+        return TranslationMemoryInfo::parseList($content);
+    }
 }

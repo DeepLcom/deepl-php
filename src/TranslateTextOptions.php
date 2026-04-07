@@ -103,4 +103,15 @@ class TranslateTextOptions
      * model type will be rejected.
      */
     public const CUSTOM_INSTRUCTIONS = 'custom_instructions';
+
+    /** Set to string containing a translation memory ID to use the translation memory for translation.
+     *  Can also be set to a TranslationMemoryInfo as returned by listTranslationMemories.
+     *  @see \DeepL\DeepLClient::listTranslationMemories()
+     */
+    public const TRANSLATION_MEMORY_ID = 'translation_memory_id';
+
+    /** Set to an integer between 0 and 100 to control the minimum matching percentage
+     *  for translation memory matches. We recommend a minimum threshold of 75%.
+     */
+    public const TRANSLATION_MEMORY_THRESHOLD = 'translation_memory_threshold';
 }

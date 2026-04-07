@@ -149,6 +149,12 @@ using the following keys:
 -   `glossary`: glossary ID of glossary to use for translation.
 -   `style_id`: specifies a style rule to use with translation, either as a string
     containing the ID of the style rule, or a `StyleRuleInfo` object.
+-   `translation_memory_id`: specifies a translation memory to use with translation,
+    either as a string containing the ID of the translation memory, or a
+    `TranslationMemoryInfo` object.
+-   `translation_memory_threshold`: an integer from 0 to 100 controlling the
+    minimum matching percentage for translation memory matches. We recommend
+    a minimum threshold of 75%.
 -   `model_type`: specifies the type of translation model to use, options are:
     - `'quality_optimized'`: use a translation model that maximizes translation quality, at
                              the cost of response time. This option may be unavailable for
@@ -761,6 +767,64 @@ $result = $deeplClient->translateText(
     'en',
     'de',
     ['style_id' => $styleRules[0]]
+);
+```
+
+### Translation Memories
+
+Translation memories allow you to leverage previously translated segments to
+improve consistency and efficiency. Translation memories are managed on your
+account, each with a user-specified name and a uniquely-assigned ID.
+
+#### Uploading and managing translation memories
+
+Currently translation memories must be uploaded and managed in the DeepL UI via
+https://www.deepl.com/translation-memory. Full CRUD functionality via the APIs will
+come shortly.
+
+#### Listing all translation memories
+
+`listTranslationMemories()` returns a list of `TranslationMemoryInfo` objects
+corresponding to all of your stored translation memories. The method accepts
+optional parameters: `page` (page number for pagination, 0-indexed) and
+`pageSize` (number of items per page).
+
+```php
+$translationMemories = $deeplClient->listTranslationMemories();
+foreach ($translationMemories as $tm) {
+    echo "{$tm->name} ({$tm->translationMemoryId})\n";
+    echo "  Source: {$tm->sourceLanguage}\n";
+    echo "  Targets: " . implode(', ', $tm->targetLanguages) . "\n";
+    echo "  Segments: {$tm->segmentCount}\n";
+}
+```
+
+#### Using a translation memory for translation
+
+You can use a translation memory for text translation by setting the
+`translation_memory_id` option to either the translation memory ID or a
+`TranslationMemoryInfo` object. Optionally, set `translation_memory_threshold`
+to control the minimum similarity score for matches:
+
+```php
+// Using a translation memory ID
+$result = $deeplClient->translateText(
+    'Hello, world!',
+    'en',
+    'de',
+    ['translation_memory_id' => 'tm-example-id-0001']
+);
+
+// Using a TranslationMemoryInfo object with threshold
+$translationMemories = $deeplClient->listTranslationMemories();
+$result = $deeplClient->translateText(
+    'Hello, world!',
+    'en',
+    'de',
+    [
+        'translation_memory_id' => $translationMemories[0],
+        'translation_memory_threshold' => 80,
+    ]
 );
 ```
 

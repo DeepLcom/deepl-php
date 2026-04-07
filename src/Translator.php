@@ -709,6 +709,26 @@ class Translator
         if (isset($options[TranslateTextOptions::CUSTOM_INSTRUCTIONS])) {
             $params[TranslateTextOptions::CUSTOM_INSTRUCTIONS] = $options[TranslateTextOptions::CUSTOM_INSTRUCTIONS];
         }
+        if (isset($options[TranslateTextOptions::TRANSLATION_MEMORY_ID])) {
+            $tm = $options[TranslateTextOptions::TRANSLATION_MEMORY_ID];
+            if (is_string($tm)) {
+                $params['translation_memory_id'] = $tm;
+            } elseif ($tm instanceof TranslationMemoryInfo) {
+                $params['translation_memory_id'] = $tm->translationMemoryId;
+            } else {
+                throw new DeepLException('translation_memory_id must be a string or TranslationMemoryInfo object');
+            }
+        }
+        if (isset($options[TranslateTextOptions::TRANSLATION_MEMORY_THRESHOLD])) {
+            if (!isset($options[TranslateTextOptions::TRANSLATION_MEMORY_ID])) {
+                throw new DeepLException('translation_memory_threshold requires translation_memory_id');
+            }
+            $threshold = $options[TranslateTextOptions::TRANSLATION_MEMORY_THRESHOLD];
+            if (!is_int($threshold) || $threshold < 0 || $threshold > 100) {
+                throw new DeepLException('translation_memory_threshold must be an integer between 0 and 100');
+            }
+            $params['translation_memory_threshold'] = strval($threshold);
+        }
         $this->applyExtraBodyParameters(
             $params,
             $options[TranslateTextOptions::EXTRA_BODY_PARAMETERS] ?? null
