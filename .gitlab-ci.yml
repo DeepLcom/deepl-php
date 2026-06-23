@@ -123,6 +123,9 @@ semgrep-sast:
   stage: test
   extends: .test
   retry: 1
+  variables:
+    VALIDATE_REQUESTS_FOR_DEEPL_MOCK: '1'
+    VALIDATE_RESPONSES_FOR_DEEPL_MOCK: '1'
   parallel:
     matrix:
       - PHP_VERSION: "8.3-alpine"

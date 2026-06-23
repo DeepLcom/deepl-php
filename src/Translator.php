@@ -160,15 +160,15 @@ class Translator
             $options[TranslateTextOptions::FORMALITY] ?? null,
             $options[TranslateTextOptions::GLOSSARY] ?? null
         );
-        // Always send show_billed_characters=1, remove when the API default is changed to true
-        $params["show_billed_characters"] = "1";
+        // Always send show_billed_characters=true, remove when the API default is changed to true
+        $params["show_billed_characters"] = true;
         $this->validateAndAppendTexts($params, $texts);
         $this->validateAndAppendTextOptions($params, $options);
 
         $response = $this->client->sendRequestWithBackoff(
             'POST',
             '/v2/translate',
-            [HttpClientWrapper::OPTION_PARAMS => $params]
+            [HttpClientWrapper::OPTION_JSON => json_encode($params)]
         );
         $this->checkStatusCode($response);
 
@@ -404,7 +404,7 @@ class Translator
         $response = $this->client->sendRequestWithBackoff(
             'POST',
             '/v2/glossaries',
-            [HttpClientWrapper::OPTION_PARAMS => $params]
+            [HttpClientWrapper::OPTION_JSON => json_encode($params)]
         );
         $this->checkStatusCode($response, false, true);
         list(, $content) = $response;
@@ -445,7 +445,7 @@ class Translator
         $response = $this->client->sendRequestWithBackoff(
             'POST',
             '/v2/glossaries',
-            [HttpClientWrapper::OPTION_PARAMS => $params]
+            [HttpClientWrapper::OPTION_JSON => json_encode($params)]
         );
         $this->checkStatusCode($response, false, true);
         list(, $content) = $response;
@@ -514,10 +514,10 @@ class Translator
      */
     private function getLanguages(bool $target): array
     {
+        $type = $target ? 'target' : 'source';
         $response = $this->client->sendRequestWithBackoff(
             'GET',
-            '/v2/languages',
-            [HttpClientWrapper::OPTION_PARAMS => ['type' => $target ? 'target' : 'source']]
+            "/v2/languages?type=$type"
         );
         $this->checkStatusCode($response);
         list(, $content) = $response;
@@ -540,27 +540,17 @@ class Translator
     }
 
     /**
-     * Joins given TagList with commas to form a single comma-delimited string.
-     * @param string[]|string $tagList List of tags to join.
-     * @return string Tags combined into a comma-delimited string.
+     * Converts the given TagList to an array of tag strings.
+     * @param string[]|string $tagList List of tags as an array or comma-separated string.
+     * @return string[] Tags as an array of strings.
      */
-    private function joinTagList($tagList): string
+    private function toTagList($tagList): array
     {
         if (is_string($tagList)) {
-            return $tagList;
+            return $tagList === '' ? [] : explode(',', $tagList);
         } else {
-            return implode(',', $tagList);
+            return $tagList;
         }
-    }
-
-    /**
-     * Returns '1' if the argument is truthy, otherwise '0'.
-     * @param mixed $arg Argument to check.
-     * @return string '1' or '0'.
-     */
-    private function toBoolString($arg): string
-    {
-        return $arg ? '1' : '0';
     }
 
     /**
@@ -626,14 +616,15 @@ class Translator
                     );
                 }
             }
+            $params['text'] = $texts;
         } else {
             if (!is_string($texts)) {
                 throw new DeepLException(
                     'texts parameter must be a string or array of strings',
                 );
             }
+            $params['text'] = [$texts];
         }
-        $params['text'] = $texts;
     }
 
     /**
@@ -666,7 +657,7 @@ class Translator
         }
         if (isset($options[TranslateTextOptions::PRESERVE_FORMATTING])) {
             $params[TranslateTextOptions::PRESERVE_FORMATTING] =
-                $this->toBoolString($options[TranslateTextOptions::PRESERVE_FORMATTING]);
+                (bool)$options[TranslateTextOptions::PRESERVE_FORMATTING];
         }
         if (isset($options[TranslateTextOptions::TAG_HANDLING])) {
             $params[TranslateTextOptions::TAG_HANDLING] = $options[TranslateTextOptions::TAG_HANDLING];
@@ -676,7 +667,7 @@ class Translator
         }
         if (isset($options[TranslateTextOptions::OUTLINE_DETECTION])) {
             $params[TranslateTextOptions::OUTLINE_DETECTION] =
-                $this->toBoolString($options[TranslateTextOptions::OUTLINE_DETECTION]);
+                (bool)$options[TranslateTextOptions::OUTLINE_DETECTION];
         }
         if (isset($options[TranslateTextOptions::CONTEXT])) {
             $params[TranslateTextOptions::CONTEXT] = $options[TranslateTextOptions::CONTEXT];
@@ -686,15 +677,15 @@ class Translator
         }
         if (isset($options[TranslateTextOptions::NON_SPLITTING_TAGS])) {
             $params[TranslateTextOptions::NON_SPLITTING_TAGS] =
-                $this->joinTagList($options[TranslateTextOptions::NON_SPLITTING_TAGS]);
+                $this->toTagList($options[TranslateTextOptions::NON_SPLITTING_TAGS]);
         }
         if (isset($options[TranslateTextOptions::SPLITTING_TAGS])) {
             $params[TranslateTextOptions::SPLITTING_TAGS] =
-                $this->joinTagList($options[TranslateTextOptions::SPLITTING_TAGS]);
+                $this->toTagList($options[TranslateTextOptions::SPLITTING_TAGS]);
         }
         if (isset($options[TranslateTextOptions::IGNORE_TAGS])) {
             $params[TranslateTextOptions::IGNORE_TAGS] =
-                $this->joinTagList($options[TranslateTextOptions::IGNORE_TAGS]);
+                $this->toTagList($options[TranslateTextOptions::IGNORE_TAGS]);
         }
         if (isset($options[TranslateTextOptions::STYLE_ID])) {
             $styleRule = $options[TranslateTextOptions::STYLE_ID];
@@ -727,7 +718,7 @@ class Translator
             if (!is_int($threshold) || $threshold < 0 || $threshold > 100) {
                 throw new DeepLException('translation_memory_threshold must be an integer between 0 and 100');
             }
-            $params['translation_memory_threshold'] = strval($threshold);
+            $params['translation_memory_threshold'] = $threshold;
         }
         $this->applyExtraBodyParameters(
             $params,

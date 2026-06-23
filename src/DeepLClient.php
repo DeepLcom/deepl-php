@@ -38,7 +38,7 @@ class DeepLClient extends Translator
         $response = $this->client->sendRequestWithBackoff(
             'POST',
             '/v2/write/rephrase',
-            [HttpClientWrapper::OPTION_PARAMS => $params]
+            [HttpClientWrapper::OPTION_JSON => json_encode($params)]
         );
         $this->checkStatusCode($response);
         list(, $content) = $response;

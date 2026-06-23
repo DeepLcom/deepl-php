@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Migrated request bodies for `/v2/translate`, `/v2/glossaries`, and
+  `/v2/write/rephrase` to `application/json` with correctly-typed fields
+  (e.g. `text` is sent as an array, `show_billed_characters` as a boolean,
+  tag lists as arrays, `translation_memory_threshold` as an integer).
+- Send `type` as a query parameter on `GET /v2/languages` instead of in the
+  request body.
+- Enabled OpenAPI request and response validation for the mock-server CI jobs.
 
 ## [1.18.0] - 2026-04-09
 ### Added
