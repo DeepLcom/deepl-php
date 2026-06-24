@@ -159,6 +159,39 @@ class RequestShapeTest extends DeepLTestBase
         $this->assertCommonRequestHeaders($client);
     }
 
+    public function testGetLanguagesV3RequestShape(): void
+    {
+        $client = new CapturingHttpClient('[]');
+        $deeplClient = $this->makeCapturingDeepLClient($client);
+
+        $deeplClient->getLanguagesForResource(
+            LanguageResource::RESOURCE_TRANSLATE_TEXT,
+            [LanguageSupport::INCLUDE_BETA, LanguageSupport::INCLUDE_EXTERNAL]
+        );
+
+        $this->assertEquals('GET', $client->getLastRequestMethod());
+        $this->assertEquals('/v3/languages', $client->getLastRequestPath());
+        $query = $client->getLastRequestQuery();
+        $this->assertStringContainsString('resource=translate_text', $query);
+        // include must be repeated, not bracket-indexed
+        $this->assertStringContainsString('include=beta', $query);
+        $this->assertStringContainsString('include=external', $query);
+        $this->assertStringNotContainsString('include%5B', $query);
+        $this->assertCommonRequestHeaders($client);
+    }
+
+    public function testGetLanguageResourcesRequestShape(): void
+    {
+        $client = new CapturingHttpClient('[]');
+        $deeplClient = $this->makeCapturingDeepLClient($client);
+
+        $deeplClient->getLanguageResources();
+
+        $this->assertEquals('GET', $client->getLastRequestMethod());
+        $this->assertEquals('/v3/languages/resources', $client->getLastRequestPath());
+        $this->assertCommonRequestHeaders($client);
+    }
+
     public function testTranslateTextCannedResponseParsing(): void
     {
         $body = json_encode([

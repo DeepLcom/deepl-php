@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added support for the `/v3/languages` and `/v3/languages/resources` endpoints
+  in the `DeepLClient` class: `getLanguagesForResource()` and `getLanguageResources()`.
+  These return richer per-resource, per-feature language support than the v2
+  language endpoint, including newer languages and features.
+- Added new model classes `LanguageSupport`, `LanguageResource`, `LanguageFeature`,
+  and `ResourceFeature` to represent the v3 language response shape.
+
 ### Changed
 - Migrated request bodies for `/v2/translate`, `/v2/glossaries`, and
   `/v2/write/rephrase` to `application/json` with correctly-typed fields

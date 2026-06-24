@@ -611,6 +611,55 @@ foreach ($targetLanguages as $targetLanguage) {
 }
 ```
 
+#### Listing per-resource language support
+
+`getLanguagesForResource()` queries the languages supported for a given DeepL
+resource (text translation, document translation, glossaries, voice, write,
+style rules), together with per-feature support information. It covers newer
+languages and features than `getSourceLanguages()` / `getTargetLanguages()`, and
+returns a single list per resource in which each `LanguageSupport` exposes
+`usableAsSource` and `usableAsTarget` flags.
+
+```php
+use DeepL\LanguageSupport;
+use DeepL\LanguageResource;
+use DeepL\LanguageFeature;
+
+$languages = $deeplClient->getLanguagesForResource(LanguageResource::RESOURCE_TRANSLATE_TEXT);
+foreach ($languages as $language) {
+    echo $language->name . ' (' . $language->code . ')';
+    if ($language->usableAsSource) {
+        echo ' source';
+    }
+    if ($language->usableAsTarget) {
+        echo ' target';
+    }
+    // Check feature support with the FEATURE_* constants:
+    if ($language->supports(LanguageFeature::FEATURE_FORMALITY)) {
+        echo ' (formality)';
+    }
+}
+
+// Optionally include beta and third-party-backed languages/features:
+$languages = $deeplClient->getLanguagesForResource(
+    LanguageResource::RESOURCE_TRANSLATE_TEXT,
+    [LanguageSupport::INCLUDE_BETA, LanguageSupport::INCLUDE_EXTERNAL]
+);
+```
+
+To discover which features each resource exposes (and whether a feature needs
+source/target language support), use `getLanguageResources()`:
+
+```php
+$resources = $deeplClient->getLanguageResources();
+foreach ($resources as $resource) {
+    echo $resource->resource; // Example: 'translate_text'
+    foreach ($resource->features as $name => $feature) {
+        echo "  $name needsSource=" . var_export($feature->needsSourceSupport, true);
+    }
+}
+```
+
 #### Listing available glossary languages
 
 Glossaries are supported for a subset of language pairs. To retrieve those
